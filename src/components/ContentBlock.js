@@ -132,7 +132,7 @@ class ContentBlock extends React.Component {
         //     resolve("");
         // });
 
-
+// console.log("*** requireContentBody: " + this.state.contentBodyReady);
 
 
         if (force || !this.state.contentBodyReady) {

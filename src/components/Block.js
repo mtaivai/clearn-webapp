@@ -1,5 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import MicroEvent from '../microevent.js';
+import {Button, ButtonToolbar} from 'react-bootstrap'
 
 import ContentBlock from './ContentBlock'
 import StaticContentBlock from './StaticContentBlock'
@@ -8,6 +10,23 @@ import UnknownBlock from './UnknownBlock'
 import BlockMenu from './BlockMenu'
 
 import './Block.css'
+
+
+
+
+class BlockEvents extends MicroEvent {
+
+    constructor() {
+        super();
+    }
+    // triggerBlockEvent(e) {
+    //     // if (typeof(contentState) === 'string') {
+    //     //     contentState = new ContentState(contentState, new Date());
+    //     // }
+    //     // var ev = {content: this.content, contentState: contentState};
+    //     this.trigger ("block-event", e);
+    // }
+}
 
 class Block extends React.Component {
 
@@ -19,14 +38,47 @@ class Block extends React.Component {
 
         this.state = {
             layout: null,
-            blockComponent: null,
-            menuVisible: false
+            //blockComponent: null,
+            mode: "view"
 
         }
         this.blockSpec = props.blockSpec;
+        this.setMode = this.setMode.bind(this);
+        this.onDoneEdit = this.onDoneEdit.bind(this);
+        this.onCancelEdit = this.onCancelEdit.bind(this);
 
+        this.events = new BlockEvents();
     }
 
+    getMode() {
+        return this.state.mode;
+    }
+
+    setMode(newMode) {
+        console.log("setMode: " + newMode);
+        if (newMode == this.state.mode) {
+            console.log("Mode not changed");
+        } else {
+            var validMode = false;
+
+            switch (newMode) {
+                case 'view':
+                case 'edit':
+                    validMode = true;
+                    break;
+                default:
+                    validMode = false;
+
+            }
+            if (!validMode) {
+                console.error("Invalid mode requested: " + newMode);
+            } else {
+                this.setState({
+                   mode: newMode
+                });
+            }
+        }
+    }
 
 
 
@@ -36,8 +88,9 @@ class Block extends React.Component {
     }
 
     createWrappedBlockComponent() {
-        const blockSpec = this.props.blockSpec
-        return this.wrapBlockComponent(this.createBlockComponent(blockSpec), blockSpec)
+        const blockSpec = this.props.blockSpec;
+        this.blockComponent = this.createBlockComponent(blockSpec);
+        return this.wrapBlockComponent(this.blockComponent, blockSpec);
     }
 
     createBlockComponent(blockSpec) {
@@ -45,6 +98,8 @@ class Block extends React.Component {
         const {...props} = this.props;
 
         props.blockSpec = blockSpec;
+        props.mode = this.state.mode;
+        props.blockEvents = this.events;
 
         const type = blockSpec.type;
         const blockId = blockSpec.id;
@@ -64,6 +119,8 @@ class Block extends React.Component {
         }
     }
 
+
+
     wrapBlockComponent(component) {
         const blockSpec = this.props.blockSpec;
         return (
@@ -74,21 +131,52 @@ class Block extends React.Component {
                             {blockSpec.title}
                         </div>
 
-                        <BlockMenu blockSpec={blockSpec}/>
+                        <BlockMenu blockSpec={blockSpec} mode={this.state.mode} setMode={this.setMode}/>
                     </div>
                 </div>
                 <div className="block-body-wrapper">
+                    {this.createEditToolbar()}
+
                     <div className="block-body">
                         {component}
                     </div>
                 </div>
                 <div className="block-footer-wrapper">
                     <div className="block-footer">
-                        Block footer
+                        <span>Mode: {this.state.mode}</span>
+
                     </div>
                 </div>
             </div>
         )
+    }
+
+    createEditToolbar() {
+        if (this.state.mode == 'edit') {
+            return (
+                <div className="block-body-edit-toolbar">
+                    <span>Edit mode</span>
+                    <ButtonToolbar>
+                        <Button bsSize="xsmall" bsStyle="primary" onClick={this.onDoneEdit}>Done</Button>
+                        <Button bsSize="xsmall" bsStyle="link" onClick={this.onCancelEdit}>Cancel</Button>
+                    </ButtonToolbar>
+                </div>
+            )
+        } else {
+            return (null);
+        }
+    }
+
+    onDoneEdit(ev) {
+        this.events.trigger("edit-mode", "save");
+        this.setMode("view");
+
+    }
+
+    onCancelEdit(ev) {
+        this.events.trigger("edit-mode", "cancel");
+        this.setMode("view");
+
     }
 
 

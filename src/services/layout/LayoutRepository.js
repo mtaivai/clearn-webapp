@@ -66,6 +66,41 @@ class LayoutRepository {
             }
         });
     }
+
+    updateLayout(layoutId, updateRequests) {
+        return new Promise((resolve, reject) => {
+
+            try {
+                var l = this.doUpdateLayout(layoutId, updateRequests);
+                resolve(l);
+            } catch (e) {
+                reject(`Failed to update layout with id ${layoutId}: ` + e);
+            }
+        });
+
+    }
+
+    updateBlock(layoutId, blockId, updateRequests) {
+        return new Promise((resolve, reject) => {
+
+            try {
+                var l = this.doUpdateBlock(layoutId, blockId, updateRequests);
+                resolve(l);
+            } catch (e) {
+                reject(`Failed to update block with id ${layoutId}: ` + e);
+            }
+        });
+
+    }
+
+
+    doUpdateLayout(layoutId, updateRequests) {
+        throw new Error("doUpdateLayout() is not implemented for abstract LayoutRepository");
+    }
+    doUpdateBlock(layoutId, blockId, updateRequests) {
+        throw new Error("doUpdateBlock() is not implemented for abstract LayoutRepository");
+    }
+
     doGetLayout(layoutId) {
         throw new Error("doGetLayout() is not implemented for abstract LayoutRepository");
     }

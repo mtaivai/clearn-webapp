@@ -2,7 +2,7 @@ import React from 'react'
 
 
 import PropTypes from 'prop-types'
-
+import { Nav, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
 import './Block.css'
 
 class BlockMenu extends React.Component {
@@ -17,33 +17,57 @@ class BlockMenu extends React.Component {
         }
         this.blockSpec = props.blockSpec;
         this.onClickMenu = this.onClickMenu.bind(this);
+        this.handleSelect = this.handleSelect.bind(this);
 
     }
 
+    handleSelect(eventKey) {
+        //event.preventDefault();
+        // alert(`selected ${eventKey}`);
 
+        switch (eventKey) {
+            case 'view':
+                this.props.setMode('view');
+                break;
+            case 'edit':
+                this.props.setMode('edit');
+                break;
+            default:
+                console.error("Unknown eventKey: " + eventKey);
+        }
+    }
+
+    // render() {
+    //     return (
+    //         <div className="block-menu">
+    //             <a className="menu-title" onClick={this.onClickMenu}>Menu</a>
+    //             {this.createMenuElement()}
+    //         </div>
+    //     )
+    //
+    // }
     render() {
         return (
             <div className="block-menu">
-                <a className="menu-title" onClick={this.onClickMenu}>Menu</a>
-                {this.createMenuElement()}
+                <Nav bsStyle="tabs" activeKey={this.props.mode} onSelect={this.handleSelect}>
+
+                    {/*
+                    <NavItem eventKey="view" title="View">View</NavItem>
+                    <NavItem eventKey="edit" title="Edit">Edit</NavItem>
+                    */}
+                    <NavDropdown eventKey="actions" title="Actions" id={`block-${this.blockSpec.id}-actions-dd`}>
+                        <MenuItem eventKey="edit" disabled={this.props.mode == 'edit'}>Edit</MenuItem>
+                        {/*
+
+                        <MenuItem eventKey="4.2">Another action</MenuItem>
+                        <MenuItem eventKey="4.3">Something else here</MenuItem>
+                        <MenuItem divider />
+                        <MenuItem eventKey="4.4">Separated link</MenuItem>
+                        */}
+                    </NavDropdown>
+                </Nav>
             </div>
         )
-
-    }
-    createMenuElement() {
-        if (this.state.menuVisible) {
-            return (
-                <ul ref={(ul) => {
-                    this.menuElement = ul
-                }}>
-                    <li>Yksi</li>
-                    <li>Kaksi</li>
-                    <li>Kolme</li>
-                </ul>
-            )
-        } else {
-            return (null)
-        }
     }
 
     onClickMenu() {
