@@ -1,0 +1,57 @@
+
+.progress-indicator-icon {
+    width: 12px;
+    height: 12px;
+    border: 6px solid transparent;
+    border-radius: 50%;
+    display: inline-block;
+
+    /* Hide text */
+    text-indent: 24px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+@keyframes progress-indicator-icon-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+@keyframes progress-indicator-icon-anim-ready {
+    10% { background-color: rgba(0, 155, 0, 0.75); }
+    33% { background-color: transparent; }
+    67% { background-color: rgba(170, 226, 187, 0.75); }
+    100% { background-color: transparent;  }
+}
+@keyframes progress-indicator-icon-anim-error {
+    0% { background-color: rgba(155, 16, 24, 0.75); }
+    50% { background-color: rgba(226, 128, 132, 0.75); }
+    100% { background-color: rgba(155, 16, 24, 0.75); }
+
+}
+
+.progress-indicator-icon.progress-indicator-icon-working {
+
+    border: 6px solid rgba(235, 235, 235, 0.41);
+    border-top: 6px solid rgba(67, 90, 255, 0.75);
+    /*border-radius: 50%;
+    width: 16px;
+    height: 16px;*/
+    animation: progress-indicator-icon-spin 2s linear infinite;
+}
+
+.progress-indicator-icon.progress-indicator-icon-ready {
+    background-color: transparent;
+    border-width: 0px;
+    margin-left: 6px;
+    margin-top: 6px;
+    animation: progress-indicator-icon-anim-ready 0.5s linear 3;
+}
+
+.progress-indicator-icon.progress-indicator-icon-error {
+    background-color: rgba(155, 16, 24, 0.75);
+    border-width: 0px;
+    margin-left: 6px;
+    margin-top: 6px;
+    animation: progress-indicator-icon-anim-error 2s linear infinite;
+}
+

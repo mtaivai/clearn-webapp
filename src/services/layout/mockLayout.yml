@@ -1,0 +1,63 @@
+
+home:
+  title: "Home"
+  blocks:
+    - id: 101
+      type: ContentBlock
+      title: "Some content block here"
+      layout:
+        targetZone: main
+        span: 12
+      configuration:
+        contentClass: Document
+        contentId: 6
+    - id: 102
+      type: ContentBlock
+      layout:
+        targetZone: main
+        span: 12
+      configuration:
+        contentClass: Document
+        contentId: 7
+    - id: 103
+      type: ContentPublisher
+      layout:
+        targetZone: "news"
+        span: 12
+      configuration:
+        filters:
+          - target: ""
+            op: and
+            args:
+              - target: contentClass
+                op: eq
+                args:
+                  - Document
+              - target: tags
+                op: contains
+                args:
+                  - News
+              - target: status
+                op: eq
+                args:
+                  - Published
+          - 'and(contentClass.eq("Document"), tags.contains("News"), status.eq("Published"))'
+          - 'contentClass.eq("Document") and tags.contains("News") and status.eq("Published")'
+          - 'contentClass = "Document" and tags contains "News" and status = "Published"'
+    - id: 104
+      type: StaticContentBlock
+      title: "Some static content 1"
+      layout:
+        targetZone: "header"
+      configuration:
+        contentType: "text/html"
+        contentBodyText: "<span>Header content here</span>"
+    - id: 105
+      type: StaticContentBlock
+      title: "Some static content 2"
+      layout:
+        targetZone: "header"
+      configuration:
+        contentType: "text/html"
+        contentBodyText: "<span>Another header content here</span>"
+

@@ -1,0 +1,61 @@
+
+.content-block {
+    /*border: 1px solid red;*/
+}
+.content-block .content-block-header {
+    /*border: 1px solid gray;*/
+    /*background-color: silver;*/
+}
+.content-block .content-block-footer {
+    /*border: 1px solid gray;*/
+    /*background-color: silver;*/
+}
+.content-block .content-block-body .content-block-body-content {
+    /*border: 1px solid yellow;*/
+}
+
+
+.content-block-body-header {
+    /*display: block;*/
+    /*height: 0px;*/
+    /*width: 0px;*/
+}
+
+.content-state-icon {
+    width: 8px;
+    height: 8px;
+    border: 1px solid silver;
+    border-radius: 50%;
+    display: inline-block;
+
+    /* Hide text */
+    text-indent: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.content-block-body-header .content-state-icon {
+    position: absolute;
+    left: 0px;
+}
+.content-state-icon.content-state-icon-fetching {
+    //background-color: yellow;
+    //border-color: yellow;
+
+    border: 8px solid rgba(235, 235, 235, 0.41);
+    border-top: 8px solid rgba(67, 90, 255, 0.75);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 2s linear infinite;
+}
+.content-state-icon.content-state-icon-ready {
+    /*border: 4px solid green;
+    border-radius: 50%;*/
+    display: none;
+}
