@@ -1,6 +1,6 @@
 import React from 'react'
 
-// import './StaticContentBlock.css';
+import './StaticContentBlock.css';
 
 
 import {FormGroup, FormControl, ControlLabel, HelpBlock} from 'react-bootstrap'
@@ -25,9 +25,9 @@ class StaticContentBlock extends React.Component {
 
     handleEditModeEvent(e) {
         console.log("handleEditModeEvent: " + e);
-        if (e == 'cancel') {
+        if (e === 'cancel') {
             this.setState({contentBodyText: this.props.blockSpec.configuration.contentBodyText});
-        } else if (e == 'save') {
+        } else if (e === 'save') {
             // TODO we need to access the layout repository!
             this.props.layoutRepository.updateBlock(
                 this.props.layoutId,
@@ -47,7 +47,7 @@ class StaticContentBlock extends React.Component {
     }
 
     render() {
-        if (this.props.mode == 'edit') {
+        if (this.props.mode === 'edit') {
             return this.renderEdit();
         } else {
             return this.renderView();
@@ -60,7 +60,7 @@ class StaticContentBlock extends React.Component {
         const content = this.state.contentBodyText;
 
         return (
-            <div className="static-content-block">{content}</div>
+            <div className="StaticContentBlock">{content}</div>
         )
     }
 
@@ -79,7 +79,7 @@ class StaticContentBlock extends React.Component {
 
     renderEdit() {
         return (
-            <div>
+            <div className="StaticContentBlock edit">
                 <form>
                     <FormGroup
                         controlId="formBasicText"

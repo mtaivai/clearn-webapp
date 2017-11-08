@@ -1,0 +1,80 @@
+
+/*
+Block structure
+
+.Block
+    .block-header-wrapper
+        .block-header
+    .block-body-wrapper
+        .block-body-main-toolbar
+            .toolbar-status
+            .btn-toolbar
+        .block-body
+    .block-footer-wrapper
+
+ */
+.block-wrapper {
+
+    &:hover {
+        //background-color: yellow;
+    }
+}
+.Block {
+
+    margin: 1px 1px 1px 1px;
+
+    &.border {
+    }
+
+
+
+    &:hover {
+
+        .block-footer-wrapper {
+        }
+        .block-header-wrapper {
+        }
+    }
+
+    &.edit {
+        .block-header-wrapper {
+        }
+    }
+
+    .block-body-wrapper {
+        .block-body-main-toolbar {
+
+            >* {
+            }
+            .toolbar-status {
+                &:after {
+                }
+            }
+            .btn-toolbar {
+                .btn-link {
+                }
+            }
+        }
+    }
+
+   .block-header-wrapper {
+
+
+       .block-header {
+           .block-title {
+           }
+
+           .block-menu {
+
+               .nav>li>a {
+               }
+           }
+       }
+
+    }
+
+    .block-footer-wrapper {
+
+    }
+}
+

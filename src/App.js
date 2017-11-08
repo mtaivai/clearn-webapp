@@ -13,6 +13,9 @@ import Layout from './components/Layout'
 //import ContentRepository from './ContentRepository'
 import MockContentRepository from './services/content/MockContentRepository'
 import MockLayoutRepository from './services/layout/MockLayoutRepository'
+// import BlockSettingsForm from './components/BlockSettingsForm'
+
+// import ObjectUtils from './util/ObjectUtils'
 
 class App extends Component {
 
@@ -27,15 +30,65 @@ class App extends Component {
   render() {
 
 
+
+        // var getBlockSpec = function() {
+        //     console.error("getConfiguration is not bound");
+        // }
+        //
+        // var blockSpec = {
+        //     type: "StaticContentBlock",
+        //     title: "Some static content 3",
+        //     layout: {
+        //         targetZone: "footer",
+        //         span: 4
+        //     },
+        //     configuration: {
+        //         contentType: "text/html",
+        //         contentBodyText: "One"
+        //     }
+        // }
+
+
+      // const obj = {
+      //     foo: "bar",
+      //     one: {
+      //         two: {
+      //             three: "3",
+      //             arr: [
+      //                 "item1",
+      //                 ["item2.1", "item2.2", {foo: "foo"}],
+      //                 {
+      //                     "x": "X",
+      //                     "y": ["Y1", "Y2"]
+      //                 }
+      //             ]
+      //         },
+      //         three: "tre"
+      //     }
+      // }
+      // console.log("foo: " + ObjectUtils.getProperty(obj, "foo"));
+      // console.log("one: " + ObjectUtils.getProperty(obj, "one"));
+      // console.log("one.three: " + ObjectUtils.getProperty(obj, "one.three"));
+      // console.log("one.two.three: " + ObjectUtils.getProperty(obj, "one.two.three"));
+      // console.log("one.two.arr[0]: " + ObjectUtils.getProperty(obj, "one.two.arr[0]"));
+      // console.log("one.two.arr[1][2].foo: " + ObjectUtils.getProperty(obj, "one.two.arr[1][2].foo"));
+      // ObjectUtils.setProperty(obj, "one.two.arr[1][2].foo", "bar");
+      // console.log("one.two.arr[1][2].foo: " + ObjectUtils.getProperty(obj, "one.two.arr[1][2].foo"));
+
+      // console.log("one.two.arr[2].x[0]: " + ObjectUtils.getProperty(obj, "one.two.arr[2].x[0]"));
+      // console.log("one.two.arr[1][0]: " + ObjectUtils.getProperty(obj, "one.two.arr[1][0]"));
+      // console.log("one.['two'].[ \"arr\"][1][0]: " + ObjectUtils.getProperty(obj, "one.['two']['arr'][1][0]"));
     return (
       <div className="App">
 
+          {/*
+          <BlockSettingsForm
+              blockSpec = {blockSpec}
+              getBlockSpec={(fn) => {getBlockSpec = fn}}/>
 
-
-
-          {<Layout layoutId="home" layoutRepository={this.layoutRepository} contentRepository={this.contentRepository}/>}
-
-
+          <button onClick={(e) => {console.log("settings: " + JSON.stringify(getBlockSpec()))}}>Apply</button>
+*/}
+          <Layout layoutId="home" layoutRepository={this.layoutRepository} contentRepository={this.contentRepository}/>
 
           {/*
           <header className="App-header">

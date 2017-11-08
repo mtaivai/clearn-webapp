@@ -12,7 +12,7 @@ class UnknownBlock extends React.Component {
 
     render() {
         return (
-            <div className="unknown-block">Unknown block type: {this.props.blockSpec.type}</div>
+            <div className="UnknownBlock">Unknown block type: {this.props.blockSpec.type}</div>
         )
     }
 }

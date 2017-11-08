@@ -3,6 +3,8 @@ import LayoutRepository from './LayoutRepository'
 import YAML from 'yamljs'
 import test from './mockLayout.yml'
 
+import ObjectUtils from '../../util/ObjectUtils'
+
 class MockLayoutRepository extends LayoutRepository {
 
     constructor() {
@@ -46,6 +48,8 @@ class MockLayoutRepository extends LayoutRepository {
     doUpdateBlock(layoutId, blockId, updateRequests) {
         this._fetchLayouts();
 
+        console.log("doUpdateBlock: " + JSON.stringify(updateRequests));
+
         const existing = this.layouts[layoutId];
         if (!existing) {
             throw new Error("No such layout exists: " + layoutId);
@@ -53,7 +57,7 @@ class MockLayoutRepository extends LayoutRepository {
 
         var block = null;
         for (var i = 0; i < existing.blocks.length; i++) {
-            if (existing.blocks[i].id == blockId) {
+            if (existing.blocks[i].id === blockId) {
                 block = existing.blocks[i];
                 break;
             }
@@ -62,32 +66,32 @@ class MockLayoutRepository extends LayoutRepository {
             throw new Error(`No such block exists in layout '${layoutId}': ${blockId}`);
         }
 
+        var modified = false;
         updateRequests.forEach((req) => {
 
-            this._assign(block, req.property, req.value);
+            const prevValue = ObjectUtils.getProperty(block, req.property);
+            if (req.value !== prevValue) {
+                console.log("SETVALUE1: " + req.property + " = " + req.value);
+                console.log("block: " + JSON.stringify(block));
+                ObjectUtils.setProperty(block, req.property, req.value);
+                console.log("SETVALUE2: " + req.property + " = " + req.value);
+                modified = true;
+            }
+
         });
 
-        return block;
-
+        return {
+            updated: modified,
+            updatedBlock: block
+        }
     }
 
 
-    _assign(obj, prop, value) {
-        if (typeof prop === "string")
-            prop = prop.split(".");
 
-        if (prop.length > 1) {
-            var e = prop.shift();
-            this._assign(obj[e] =
-                    Object.prototype.toString.call(obj[e]) === "[object Object]"
-                        ? obj[e]
-                        : {},
-                prop,
-                value);
-        } else
-            obj[prop[0]] = value;
-    }
+
 }
+
+
 
 export default MockLayoutRepository
 

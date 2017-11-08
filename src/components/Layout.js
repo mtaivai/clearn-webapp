@@ -11,10 +11,13 @@ import ContentRepository from '../services/content/ContentRepository'
 //import ContentBlockBody from './ContentBlockBody'
 //import ContentBlockHeader from './ContentBlockHeader'
 //import ContentBlockFooter from './ContentBlockFooter'
+import {Helmet} from 'react-helmet'
 
 import Block from './Block'
 
-import ExampleLayout from './ExampleLayout'
+import LayoutTemplate from './LayoutTemplate'
+import DefaultLayoutTemplate from '../templates/DefaultLayoutTemplate'
+import DashBoardLayoutTemplate from '../templates/DashBoardLayoutTemplate'
 
 import './Layout.css'
 
@@ -24,15 +27,23 @@ class LayoutZoneBlockWrapper {
         this.renderBlock = props.renderBlock;
         this.blockSpec = props.blockSpec;
         this.decorate = props.decorate;
+        this.rendered = false;
+    }
+
+    getBlockId() {
+        return this.blockSpec.id;
     }
 
     render() {
-        console.log("LayoutZoneBlockWrapper.render(); blockId=" + this.blockSpec.id);
-        if (this.decorate) {
-            return this.decorate(this.renderBlock);
+        // console.log("LayoutZoneBlockWrapper.render(); blockId=" + this.blockSpec.id);
+        var result;
+        if (typeof(this.decorate) === 'function') {
+            result = this.decorate(this.renderBlock);
         } else {
-            return this.renderBlock();
+            result = this.renderBlock();
         }
+        this.rendered = true;
+        return result;
     }
 
     renderBlock() {
@@ -43,29 +54,48 @@ class LayoutZoneBlockWrapper {
 
 class LayoutZoneWrapper {
 
-    constructor(zoneId) {
-        this.zoneId = zoneId;
-        this.blockWrappers = []
+    constructor(props) {
+        this.zoneId = props.zoneId;
+        this.blockWrappers = [];
+        this.decorate = props.decorate;
+        this.decorateBlockGroup = props.decorateBlockGroup;
+        this.rendered = false;
     }
 
     render() {
-        const that = this;
-        const renderBlocks = function() {
+        const renderBlocks = () => {
             const blockComponents = [];
-            that.blockWrappers.forEach((blockWrapper) => {
+            this.blockWrappers.forEach((blockWrapper) => {
                 blockComponents.push(blockWrapper.render());
             });
-            return blockComponents;
-        }
-        console.log(`LayoutZoneWrapper.render(); zoneId = ${this.zoneId}`);
+            if (typeof(this.decorateBlockGroup) === 'function') {
+                return this.decorateBlockGroup(() => blockComponents);
+            } else {
+                return blockComponents;
+            }
+        };
+        // console.log(`LayoutZoneWrapper.render(); zoneId = ${this.zoneId}`);
 
-        return (
-            <div className={`zone-wrapper zone-wrapper-${this.zoneId} container`}>
-                <div className={`zone zone-${this.zoneId} row`}>
-                    {renderBlocks()}
-                </div>
+        // return (
+        //     <div key={this.zoneId} className={`zone-wrapper zone-wrapper-${this.zoneId} container`}>
+        //         <div className={`zone zone-${this.zoneId} row`}>
+        //             {renderBlocks()}
+        //         </div>
+        //     </div>
+        // );
+        const renderComponent = () => (
+            <div key={this.zoneId} className={`zone zone-${this.zoneId}`}>
+                {renderBlocks()}
             </div>
         );
+        var result;
+        if (typeof(this.decorate) === 'function') {
+            result = this.decorate(renderComponent, this.zoneId);
+        } else {
+            result =  renderComponent();
+        }
+        this.rendered = true;
+        return result;
     }
 
 }
@@ -121,159 +151,200 @@ class Layout extends React.Component {
 
     }
 
+    getThemeOrLayoutTemplateConfig(config, classNameSuffix, getClass, getDefaultConfig) {
+
+        if (!config) {
+            config = getDefaultConfig ? getDefaultConfig() : {name: "Default", options: {}};
+        }
+
+        if (typeof(config) === 'string') {
+            config = {name: config};
+        }
+
+        if (!config.options) {
+            config.options = {};
+        }
+
+        if (!config.name) {
+            config.name = "Default";
+        }
+
+        var className = null;
+        if (!classNameSuffix || config.name.endsWith(classNameSuffix)) {
+            className = config.name;
+        } else {
+            className = config.name + classNameSuffix;
+        }
+
+        const Class = getClass ? getClass(className) : require('./' + className).default;
+        const obj = new Class(config.options || {});
+
+        if (!obj.getName) {
+            const name = "" + config.name;
+            obj.getName = () => name;
+        }
+
+        if (!obj.getFullName) {
+            obj.getFullName = () => className;
+        }
+        return obj;
+    }
+
+    getLayoutTemplate() {
+
+        return this.getThemeOrLayoutTemplateConfig(
+            this.state.layout && this.state.layout['layoutTemplate'],
+            "LayoutTemplate",
+            (className) => require('../templates/' + className).default);
+    }
+
+    getTheme() {
+        // const Class = require('../themes/DefaultTheme').default;
+        // const obj = new Class({});
+        // return obj;
+        return this.getThemeOrLayoutTemplateConfig(
+            this.state.layout && this.state.layout['theme'],
+            "Theme",
+            (className) => require('../themes/' + className).default);
+    }
+
+    applyThemeOnDocument(theme) {
+        document.body.setAttribute('theme', theme.getName());
+        var bodyClass = document.body.className;
+        const themeClassRegexp = new RegExp('(?:^|\\s)' + theme.getName() + 'Theme(?:$|\\s)');
+        if (!bodyClass.match(themeClassRegexp)) {
+
+            if (bodyClass.length > 0 && !bodyClass.endsWith(' ')) {
+                bodyClass += ' ';
+            }
+            bodyClass += theme.getName() + 'Theme';
+            document.body.className = bodyClass;
+
+        }
+    }
+
     render() {
-        const layout = new ExampleLayout();
-        const layoutInfo = layout.getLayoutInfo();
-        console.log("layout: " + typeof(layout));
-        console.log("layoutInfo: " + JSON.stringify(layoutInfo));
+        // TODO we should cache lots of stuff between renders!
+
+        const layoutTemplate = this.getLayoutTemplate();
+        const theme = this.getTheme();
+
+        this.applyThemeOnDocument(theme);
+
+        const layoutInfo = layoutTemplate.getLayoutInfo();
+        // console.log("layoutTemplate: " + layoutTemplate.getName());
+        // console.log("layoutInfo: " + JSON.stringify(layoutInfo));
 
         const zones = layoutInfo.zones;
         const defaultZone = layoutInfo.defaultZone;
 
         const zoneWrappers = this.mapLayoutZones(zones, defaultZone);
 
-        // zoneWrappers.getZone = function(zoneId) {
-        //     const z = zoneWrappers[zoneId];
-        //     // Return empty LayoutZoneWrapper
-        //     return z ? z : new LayoutZoneWrapper(zoneId);
-        // };
 
-
-        // {
-        //    "main": [
-        //       render: renderFunc
-        //    ]
-        // }
-        //const zoneBlockObjects = {};
 
         // Add span (distribute to rows and cols)
 
-        const minSpan = 1;
-        const maxSpan = 12;
-        const defaultSpan = 12;
 
-        for (var zone in zoneWrappers) {
 
-            const zoneWrapper = zoneWrappers[zone];
+        for (var zoneId in zoneWrappers) {
+
+            const zoneWrapper = zoneWrappers[zoneId];
+
+            if (typeof(layoutTemplate.decorateZone) === 'function') {
+
+                zoneWrapper.decorate = (render, zoneId) => {
+                    return layoutTemplate.decorateZone(render, zoneId);
+                };
+            }
+            if (typeof(layoutTemplate.decorateBlockGroup) === 'function') {
+
+                zoneWrapper.decorateBlockGroup = (render) => {
+                    return layoutTemplate.decorateBlockGroup(render);
+                };
+            }
 
             zoneWrapper.blockWrappers.forEach((blockWrapper) => {
                 //console.log(`Zone ${zone} block: ${block.blockSpec.id}`);
                 const blockSpec = blockWrapper.blockSpec;
 
-                var span;
-                if (blockSpec.layoutOptions && blockSpec.layoutOptions.span) {
-                    span = blockSpec.layoutOptions.span;
-                } else {
-                    span = defaultSpan;
-                }
-                if (span < minSpan) {
-                    span = minSpan;
-                }
-                else if (span > maxSpan) {
-                    span = maxSpan;
-                }
+                // var span;
+                // if (blockSpec.layoutOptions && blockSpec.layoutOptions.span) {
+                //     span = blockSpec.layoutOptions.span;
+                // } else {
+                //     span = defaultSpan;
+                // }
+                // if (span < minSpan) {
+                //     span = minSpan;
+                // }
+                // else if (span > maxSpan) {
+                //     span = maxSpan;
+                // }
+                //
+                // //const span = 4;//blockSpec.layout.span;
+                //
+                // const spanClass = `block-wrapper col-md-${span}`;
+                //
+                // blockWrapper.decorate = (render) => {
+                //     return (
+                //         <div key={blockSpec.id} className={spanClass}>
+                //             {render()}
+                //         </div>
+                //     )
+                // };
 
-                //const span = 4;//blockSpec.layout.span;
+                if (typeof(layoutTemplate.decorateBlock) === 'function') {
 
-                const spanClass = `block-wrapper col-md-${span}`;
-
-                blockWrapper.decorate = (render) => {
-                    return (
-                        <div key={blockSpec.id} className={spanClass}>
-                            {render()}
-                        </div>
-                    )
-                };
+                    blockWrapper.decorate = (render) => {
+                        return layoutTemplate.decorateBlock(render, blockSpec);
+                    };
+                }
 
             });
-            //const ids = zoneBlocks[zone].map((x) => { return x.blockSpec.id });
-            //console.log("Zone " + zone + ": " + JSON.stringify(ids));
-
-            // layout.span
 
         }
 
+        const applyContributions = [];
+        if (layoutTemplate.getHeadContributions) {
+            const contributions = layoutTemplate.getHeadContributions();
+            contributions.forEach((contrib) => {
+                const key = contrib.key;
+                if (!key) {
+                    console.error(`Warning: no 'key' specified for head contribution element in layout template ${layoutTemplate.getName()}`);
+                } else {
+                    // TODO prevent duplicates!
+                }
+                applyContributions.push(contrib);
+            });
+        }
 
-        return (
-            <div className="Layout">
-                Layout
-                <div className="LayoutInner">
-                    LayoutInner
-                    {layout.renderLayout(zoneWrappers)}
+        var result = (
+            <div className={`Layout ${theme.getFullName()}`}
+                theme={theme.getName()}>
+                <div className={`Theme`}>
+                    {theme.render && theme.render()}
                 </div>
+                <Helmet>
+                    {applyContributions}
+                </Helmet>
+                {layoutTemplate.renderLayout(zoneWrappers)}
             </div>
         );
 
-    }
-
-    OLD_render() {
-        // We need to know zones in advance to be able to define a "default drop target"
-
-        const zoneBlocks = this.mapZoneBlocks(["header", "main", "footer"], "main");
-
-        const zoneBlockComponents = {};
-
-        // Add span (distribute to rows and cols)
-
-        const minSpan = 1;
-        const maxSpan = 12;
-        const defaultSpan = 12;
-
-        for (var zone in zoneBlocks) {
-
-            const componentList = []
-            zoneBlockComponents[zone] = componentList;
-
-            zoneBlocks[zone].forEach((zoneBlock) => {
-                //console.log(`Zone ${zone} block: ${block.blockSpec.id}`);
-                const blockSpec = zoneBlock.blockSpec;
-
-                var span;
-                if (blockSpec.layoutOptions && blockSpec.layoutOptions.span) {
-                    span = blockSpec.layoutOptions.span;
-                } else {
-                    span = defaultSpan;
+        for (var zoneId in zoneWrappers) {
+            const zoneWrapper = zoneWrappers[zoneId];
+            if (!zoneWrapper.rendered) {
+                console.error(`Warning: zone '${zoneId}' not rendered by layout template '${layoutTemplate.getName()}'`);
+            }
+            zoneWrapper.blockWrappers.forEach((blockWrapper) => {
+                if (!blockWrapper.rendered) {
+                    console.error(`Warning: Block '${blockWrapper.getBlockId()}' in zone '${zoneId}' not rendered by layout template '${layoutTemplate.getName()}'`);
                 }
-                if (span < minSpan) {
-                    span = minSpan;
-                }
-                else if (span > maxSpan) {
-                    span = maxSpan;
-                }
-
-                //const span = 4;//blockSpec.layout.span;
-
-                const spanClass = `block-wrapper col-md-${span}`;
-
-
-                componentList.push((<div key={blockSpec.id} className={spanClass}>{zoneBlock.component}</div>));
             });
-            //const ids = zoneBlocks[zone].map((x) => { return x.blockSpec.id });
-            //console.log("Zone " + zone + ": " + JSON.stringify(ids));
-
-            // layout.span
 
         }
 
-        return (
-            <div className="Layout">
-                <div className="LayoutInner">
-                    {this.renderZone("header", zoneBlockComponents)}
-                    {this.renderZone("main", zoneBlockComponents)}
-                    {this.renderZone("footer", zoneBlockComponents)}
-                </div>
-            </div>
-        );
-    }
+        return result;
 
-    OLD_renderZone(zoneId, zoneBlockComponents) {
-        return (
-            <div className={`zone-wrapper zone-wrapper-${zoneId} container`}>
-                <div className={`zone zone-${zoneId} row`}>
-                    {zoneBlockComponents[zoneId]}
-                </div>
-            </div>
-        );
     }
 
     mapLayoutZones(zoneIds, defaultZoneId) {
@@ -292,11 +363,11 @@ class Layout extends React.Component {
         const map = {};
 
         zoneIds.forEach((zoneId) => {
-            map[zoneId] = new LayoutZoneWrapper(zoneId);
+            map[zoneId] = new LayoutZoneWrapper({zoneId: zoneId});
         })
 
         if (defaultZoneId && typeof(map[defaultZoneId]) === 'undefined') {
-            map[defaultZoneId] = new LayoutZoneWrapper(defaultZoneId);
+            map[defaultZoneId] = new LayoutZoneWrapper({zoneId: defaultZoneId});
         }
 
         if (!layout) {
@@ -318,7 +389,8 @@ class Layout extends React.Component {
                 mappedZone = defaultZoneId
             } else {
                 // Unknown zone; no default defined
-                mappedZone = null;
+                console.error(`No such zone: '${targetZone}' and no default zone defined`);
+                mappedZone = undefined;
             }
 
             // console.log(`Mapping ${blockSpec.id} from ${targetZone} to ${mappedZone}`);
@@ -328,93 +400,21 @@ class Layout extends React.Component {
                 const blockWrapper = new LayoutZoneBlockWrapper({
                     blockSpec: blockSpec,
                     renderBlock: () => {
-                        console.log("renderBlock: " + blockSpec.id);
+                        // console.log("renderBlock: " + blockSpec.id);
                         const {...blockProps} = this.props;
                         blockProps.onLayoutConfigurationUpdated = this.onLayoutConfigurationUpdated;
                         blockProps.blockSpec = blockSpec;
-                        return (<Block key={blockSpec.id} {...blockProps}/>);//this.wrapBlockComponent(this.createBlockComponent(blockSpec))
+                        return (<Block key={blockSpec.id} {...blockProps}/>);
                     }
                 });
                 map[mappedZone].blockWrappers.push(blockWrapper);
 
-                // const {...blockProps} = this.props;
-                // blockProps.onLayoutConfigurationUpdated = this.onLayoutConfigurationUpdated;
-                // blockProps.blockSpec = blockSpec;
-                // const component = (<Block key={blockSpec.id} {...blockProps}/>);//this.wrapBlockComponent(this.createBlockComponent(blockSpec))
-                // map[mappedZone].push({blockSpec: blockSpec, component: component});
             }
-
-
-        })
+        });
         return map
     }
 
-    /**
-     * Map of
-     * {
-     *  zoneId: [{blockSpec: {}, component: {}}]
-     * }
-     * @param zoneIds
-     * @param defaultZoneId
-     * @returns {{}}
-     */
-    OLD_mapZoneBlocks(zoneIds, defaultZoneId) {
 
-        //var components = this.mappedZoneBlockComponents[zoneId];
-        //
-        // if (components) {
-        //     // Already mapped
-        //     return components;
-        // }
-
-        const layout = this.state.layout;
-        if (!layout) {
-            // Layout not yet ready
-            return {};
-        }
-
-        // components = []
-
-        var map = {}
-        zoneIds.forEach((zoneId) => {
-            map[zoneId] = []
-        })
-
-        if (defaultZoneId && typeof(map[defaultZoneId]) === 'undefined') {
-            map[defaultZoneId] = []
-        }
-
-
-        layout.blocks.forEach((blockSpec) => {
-            const layoutSpec = blockSpec.layoutOptions;
-            const targetZone = layoutSpec ? layoutSpec.targetZone : null;
-
-            var mappedZone
-            if (typeof(map[targetZone]) !== 'undefined') {
-                // Known zone
-                mappedZone = targetZone
-            } else if (defaultZoneId) {
-                // Unknown zone, map to default
-                mappedZone = defaultZoneId
-            } else {
-                // Unknown zone; no default defined
-                mappedZone = null;
-            }
-
-            // console.log(`Mapping ${blockSpec.id} from ${targetZone} to ${mappedZone}`);
-
-            if (typeof(mappedZone) !== 'undefined') {
-                const {...blockProps} = this.props;
-                blockProps.onLayoutConfigurationUpdated = this.onLayoutConfigurationUpdated;
-                blockProps.blockSpec = blockSpec;
-                const component = (<Block key={blockSpec.id} {...blockProps}/>);//this.wrapBlockComponent(this.createBlockComponent(blockSpec))
-                map[mappedZone].push({blockSpec: blockSpec, component: component});
-            }
-
-
-        })
-        return map
-    }
 
 }
 

@@ -1,11 +1,29 @@
 
+# Foo
+# Layout
+# Theme
+#  Layout
+
 home:
   title: "Home"
+
+  # theme is either a string or map of name, options
+  theme: "Default"
+
+  # layoutTemplate is either a string or map of name, options
+  layoutTemplate:
+    name: "DashBoard"
+    options:
+      showSidebar: false
+      showFooter: true
+      #fixedFooter: true
+      #showHeader: false
+      #fixedHeader: false
   blocks:
     - id: 101
       type: ContentBlock
       title: "Some content block here"
-      layout:
+      layoutOptions:
         targetZone: main
         span: 12
       configuration:
@@ -13,7 +31,7 @@ home:
         contentId: 6
     - id: 102
       type: ContentBlock
-      layout:
+      layoutOptions:
         targetZone: main
         span: 12
       configuration:
@@ -21,7 +39,7 @@ home:
         contentId: 7
     - id: 103
       type: ContentPublisher
-      layout:
+      layoutOptions:
         targetZone: "news"
         span: 12
       configuration:
@@ -47,17 +65,64 @@ home:
     - id: 104
       type: StaticContentBlock
       title: "Some static content 1"
-      layout:
+      layoutOptions:
         targetZone: "header"
+        span: 6
       configuration:
         contentType: "text/html"
         contentBodyText: "<span>Header content here</span>"
     - id: 105
       type: StaticContentBlock
       title: "Some static content 2"
-      layout:
+      layoutOptions:
         targetZone: "header"
+        span: 6
       configuration:
         contentType: "text/html"
         contentBodyText: "<span>Another header content here</span>"
+    - id: 106
+      type: StaticContentBlock
+      title: "Some static content 3"
+      layoutOptions:
+        targetZone: "footer"
+        span: 4
+      configuration:
+        contentType: "text/html"
+        contentBodyText: "One"
+    - id: 107
+      type: StaticContentBlock
+      title: "Some static content 4"
+      layoutOptions:
+        targetZone: "footer"
+        span: 4
+      configuration:
+        contentType: "text/html"
+        contentBodyText: "Two"
+    - id: 108
+      type: StaticContentBlock
+      title: "Some static content 5"
+      layoutOptions:
+        targetZone: "footer"
+        span: 4
+      configuration:
+        contentType: "text/html"
+        contentBodyText: "Three"
+    - id: 109
+      type: StaticContentBlock
+      title: "Some static content 6"
+      layoutOptions:
+        targetZone: "SomeOtherZone"
+        span: 4
+      configuration:
+        contentType: "text/html"
+        contentBodyText: "Three"
+    - id: 110
+      type: StaticContentBlock
+      title: "Side navi"
+      layoutOptions:
+        targetZone: "sidebar"
+        span: 4
+      configuration:
+        contentType: "text/html"
+        contentBodyText: "Three"
 

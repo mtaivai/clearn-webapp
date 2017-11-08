@@ -125,7 +125,9 @@ class ContentBlockBodyContent extends React.Component {
             this.props.requireContentBody();
             return false;
         } else {
-            return true;
+            // TODO HACK
+            return !(this.props.contentBodyReady && nextProps.contentBodyReady);
+            // return true;
         }
     }
 
@@ -144,7 +146,7 @@ class ContentBlockBodyContent extends React.Component {
         this.props.requireContentBody();
 
         if (this.props.contentBodyReady) {
-            var body = this.props.getContentBodyContent() + new Date();
+            var body = this.props.getContentBodyContent();
 
             return (
                 <div className='content-block-body-content' dangerouslySetInnerHTML={{__html: body}}></div>

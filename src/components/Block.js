@@ -16,9 +16,9 @@ import './Block.css'
 
 class BlockEvents extends MicroEvent {
 
-    constructor() {
-        super();
-    }
+    // constructor() {
+    //     super();
+    // }
     // triggerBlockEvent(e) {
     //     // if (typeof(contentState) === 'string') {
     //     //     contentState = new ContentState(contentState, new Date());
@@ -42,10 +42,14 @@ class Block extends React.Component {
             mode: "view"
 
         }
-        this.blockSpec = props.blockSpec;
+
+        //this.updateLayout = props.onLayoutConfigurationUpdated;
+
+        // this.blockSpec = props.blockSpec;
         this.setMode = this.setMode.bind(this);
         this.onDoneEdit = this.onDoneEdit.bind(this);
         this.onCancelEdit = this.onCancelEdit.bind(this);
+        this.updateBlockSpec = this.updateBlockSpec.bind(this);
 
         this.events = new BlockEvents();
     }
@@ -56,7 +60,7 @@ class Block extends React.Component {
 
     setMode(newMode) {
         console.log("setMode: " + newMode);
-        if (newMode == this.state.mode) {
+        if (newMode === this.state.mode) {
             console.log("Mode not changed");
         } else {
             var validMode = false;
@@ -121,21 +125,54 @@ class Block extends React.Component {
 
 
 
+    updateBlockSpec(blockSpec) {
+        console.log("Block.updateBlockSpec: " + JSON.stringify(blockSpec));
+
+        this.props.layoutRepository.updateBlock(this.props.layoutId, this.props.blockSpec.id, blockSpec)
+            .then((updated, updatedBlock) => {
+                //this.forceUpdate();
+                console.log("Updated: " + updated);
+                // Notify (parent) listener:
+                if (updated) {
+                    if (this.props.onLayoutConfigurationUpdated) {
+                        this.props.onLayoutConfigurationUpdated(updated, updatedBlock);
+                    }
+                }
+            }).catch((msg, e) => {
+                console.error(msg, e);
+        });
+
+
+    }
+
+
     wrapBlockComponent(component) {
         const blockSpec = this.props.blockSpec;
+
+        var cssClass = "Block";
+
+        const mode = this.getMode();
+        if (mode === 'edit') {
+            cssClass += " edit";
+        }
+
         return (
-            <div className="block-wrapper">
+            <div className={cssClass}>
                 <div className="block-header-wrapper">
                     <div className="block-header">
                         <div className="block-title">
                             {blockSpec.title}
                         </div>
 
-                        <BlockMenu blockSpec={blockSpec} mode={this.state.mode} setMode={this.setMode}/>
+                        <BlockMenu
+                            blockSpec={blockSpec}
+                            mode={this.state.mode}
+                            setMode={this.setMode}
+                            updateBlockSpec={this.updateBlockSpec}/>
                     </div>
                 </div>
                 <div className="block-body-wrapper">
-                    {this.createEditToolbar()}
+                    {this.createBlockToolbar()}
 
                     <div className="block-body">
                         {component}
@@ -143,7 +180,7 @@ class Block extends React.Component {
                 </div>
                 <div className="block-footer-wrapper">
                     <div className="block-footer">
-                        <span>Mode: {this.state.mode}</span>
+                        {/*<span>Mode: {this.state.mode}</span>*/}
 
                     </div>
                 </div>
@@ -151,11 +188,11 @@ class Block extends React.Component {
         )
     }
 
-    createEditToolbar() {
-        if (this.state.mode == 'edit') {
+    createBlockToolbar() {
+        if (this.state.mode === 'edit') {
             return (
-                <div className="block-body-edit-toolbar">
-                    <span>Edit mode</span>
+                <div className="block-body-main-toolbar">
+                    <span className="toolbar-status">Edit mode</span>
                     <ButtonToolbar>
                         <Button bsSize="xsmall" bsStyle="primary" onClick={this.onDoneEdit}>Done</Button>
                         <Button bsSize="xsmall" bsStyle="link" onClick={this.onCancelEdit}>Cancel</Button>
@@ -184,6 +221,10 @@ class Block extends React.Component {
 
 
 Block.propTypes = {
+    layoutId: PropTypes.string.isRequired,
+    blockSpec: PropTypes.object.isRequired,
+
+    onLayoutConfigurationUpdated: PropTypes.func
     //layoutRepository: PropTypes.instanceOf(LayoutRepository).isRequired,
     //contentRepository: PropTypes.instanceOf(ContentRepository).isRequired
     // todos: PropTypes.arrayOf(

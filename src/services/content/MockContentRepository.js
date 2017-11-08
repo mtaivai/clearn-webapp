@@ -16,7 +16,7 @@ class MockContentRepository extends ContentRepository {
             item.id = i;
             item.contentType = "text/html; charset=UTF-8";
             this.items[item.id] = item;
-            this.contentBodies[item.id] = ( "<p>Content of document #" + item.id + "</p>");
+            this.contentBodies[item.id] = ( `<h1>Document ${item.id}</h1><p>Content of document #${item.id}</p>`);
         }
     }
 

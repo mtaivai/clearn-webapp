@@ -1,0 +1,194 @@
+
+.DefaultTheme {
+
+
+}
+
+body.DefaultTheme {
+  XXbackground-color: white;
+
+  background: #b7b7b7;
+
+  //background: -webkit-linear-gradient(-90deg, red, yellow); /* For Safari 5.1 to 6.0 */
+  //background: -o-linear-gradient(-90deg, red, yellow); /* For Opera 11.1 to 12.0 */
+  //background: -moz-linear-gradient(-90deg, red, yellow); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(135deg, #f4f4f4, #d0d0d0); /* Standard syntax */
+
+
+}
+
+.Layout.DefaultTheme {
+
+  .container.main, .container-fluid.main,
+  .container.zone-wrapper-main, .container-fluid.zone-wrapper-main {
+    border-radius: 4px;
+    background-color: rgba(247, 247, 247, 0.92);
+
+    //// Glow shadow:
+    //-webkit-box-shadow: 0px 0px 25px 10px rgba(240,240,240,1);
+    //-moz-box-shadow: 0px 0px 25px 10px rgba(240,240,240,1);
+    //box-shadow: 0px 0px 25px 10px rgba(240,240,240,1);
+
+
+    // Drop shadow:
+    -webkit-box-shadow: 5px 5px 5px 0px rgba(240,240,240,1);
+    -moz-box-shadow: 5px 5px 5px 0px rgba(240,240,240,1);
+    box-shadow: 5px 5px 5px 0px rgba(200,200,200,1);
+  }
+
+  .Block {
+
+    margin: 1px 1px 1px 1px;
+
+    &.border {
+      margin-bottom: 6px;
+      border: 1px solid black;
+      border-radius: 3px;
+      /*padding: 3px 3px 3px 3px;*/
+
+      -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.75);
+      -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.75);
+      box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.75);
+    }
+
+
+
+    &:hover {
+      margin: 0px 0px 0px 0px;
+      border: 1px dotted rgba(73,128,222,1);
+      -webkit-box-shadow: 0px 0px 12px 0px rgba(73,128,222,1);
+      -moz-box-shadow: 0px 0px 12px 0px rgba(73,128,222,1);
+      box-shadow: 0px 0px 12px 0px rgba(73,128,222,1);
+
+      .block-footer-wrapper {
+        display: inline-block;
+      }
+      .block-header-wrapper {
+        display: inline-block;
+      }
+    }
+
+    &.edit {
+      border: 2px solid blue;
+      .block-header-wrapper {
+        background-color: steelblue;
+        color: white;
+      }
+    }
+
+    .block-body-wrapper {
+      .block-body-main-toolbar {
+        border-bottom: 1px solid gray;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        background-color: steelblue;
+        color: white;
+
+        >* {
+          margin-right: 8px;
+
+          &:first-child {
+            margin-left: 8px;
+          }
+          &:last-child {
+            margin-right: inherit;
+          }
+        }
+        .toolbar-status {
+          font-size: smaller;
+          &:after {
+            content: " → ";
+          }
+        }
+        .btn-toolbar {
+          display: inline-block;
+          vertical-align: middle;
+          .btn-link {
+            color: lightcyan;
+          }
+        }
+      }
+    }
+
+    .block-header-wrapper {
+      border-bottom: 1px solid black;
+      background-color: black;
+      color: #e0e0e0;
+
+
+      display: none;
+      width: auto;
+      position: absolute;
+      right: 10px;
+      padding-left: 8px;
+      border-radius: 0px 0px 8px 8px;
+
+      //display: none;
+
+      .block-header {
+        .block-title {
+          display: inline-block;
+        }
+
+        .block-menu {
+          //position: absolute;
+          //right: 0px;
+          //top: 0px;
+
+          diplay: inline-block;
+          float:right;
+
+          .nav {
+            background-color: black;
+            color: #707070;
+            border-bottom: 0px none;
+
+            .dropdown {
+              .dropdown-menu {
+                background-color: black;
+                color: #707070;
+
+                li {
+                  a {
+                    background-color: inherit;
+                  }
+                  a:hover {
+                    background-color: black;
+                    color:white;
+                  }
+                }
+              }
+            }
+
+            >li {
+              background-color: black;
+              >a {
+                padding-top: 0px;
+                padding-bottom: 0px;
+              }
+            }
+          }
+
+        }
+      }
+
+    }
+
+    .block-footer-wrapper {
+      // border: 1px solid red;
+      border: 1px solid gray;
+      background-color: rgba(218, 218, 218, 0.9);
+      width: auto;
+
+      position: absolute;
+      //left: 0px;
+      bottom: 0px;
+
+      padding-left: 8px;
+      padding-right: 8px;
+      border-radius: 0px 8px 0px 0px;
+
+      display: none;
+    }
+  }
+}

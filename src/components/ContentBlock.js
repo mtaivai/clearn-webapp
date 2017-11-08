@@ -198,9 +198,9 @@ class ContentBlock extends React.Component {
 
         return (
             <div className='content-block'>
-                <ContentBlockHeader {...props}/>
+                {/*<ContentBlockHeader {...props}/>*/}
                 <ContentBlockBody {...props}/>
-                <ContentBlockFooter {...props}/>
+                {/*<ContentBlockFooter {...props}/>*/}
             </div>
         )
     }

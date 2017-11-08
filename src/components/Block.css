@@ -1,93 +1,16 @@
+/*
+Block structure
 
+.Block
+    .block-header-wrapper
+        .block-header
+    .block-body-wrapper
+        .block-body-main-toolbar
+            .toolbar-status
+            .btn-toolbar
+        .block-body
+    .block-footer-wrapper
 
-.block-wrapper {
-    margin-bottom: 6px;
-    border: 1px solid black;
-    border-radius: 3px;
-    /*padding: 3px 3px 3px 3px;*/
-
-    -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.75);
-    -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.75);
-    box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.75);
-}
-
-.block-wrapper .block-body-wrapper {
-
-}
-
-
-.block-wrapper .block-body-wrapper .block-body-edit-toolbar {
-    border-bottom: 1px solid gray;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    background-color: steelblue;
-    color: white;
-}
-
-.block-wrapper .block-body-wrapper .block-body-edit-toolbar >* {
-    margin-right: 8px;
-}
-.block-wrapper .block-body-wrapper .block-body-edit-toolbar >*:first-child {
-    margin-left: 8px;
-}
-.block-wrapper .block-body-wrapper .block-body-edit-toolbar >*:last-child {
-    margin-right: inherit;
-}
-
-.block-wrapper .block-body-wrapper .block-body-edit-toolbar .btn-toolbar {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.block-wrapper .block-body-wrapper .block-body-edit-toolbar .btn-toolbar .btn-link {
-    color: lightcyan;
-}
-
-
-.block-wrapper .block-header-wrapper {
-    border-bottom: 1px solid black;
-    background-color: silver;
-}
-
-.block-wrapper .block-footer-wrapper {
-    border-top: 1px solid gray;
-    background-color: silver;
-}
-
-.block-header .block-title {
-    display: inline-block;
-}
-
-.block-header .block-menu {
-    //position: absolute;
-    //right: 0px;
-    //top: 0px;
-
-    diplay: inline-block;
-    float:right;
-}
-
-.block-header .block-menu .nav>li>a {
-    padding-top: 0px;
-    padding-bottom: 0px;
-}
-
-/*.block-header .block-menu .menu-title {*/
-    /*color: blue;*/
-/*}*/
-
-/*.block-header .block-menu ul {*/
-    /*display: block;*/
-    /*color: white;*/
-    /*background-color: gray;*/
-
-    /*border-top: 0px none;*/
-    /*border-left: 1px solid black;*/
-    /*border-right: 1px solid black;*/
-    /*border-bottom: 1px solid black;*/
-    /*border-radius: 0px 0px 5px 5px;*/
-
-    /*padding: 0px 25px 5px 25px;*/
-
-    /*list-style-type: none;*/
-/*}*/
+ */
+.Block {
+  margin: 1px 1px 1px 1px; }
