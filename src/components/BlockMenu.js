@@ -16,17 +16,38 @@ class BlockMenu extends React.Component {
 
         this.state = {
             // menuVisible: false
-            showModal: ''
+            showModal: '',
+            editSupported: this.props.blockContext.isModeSupported("edit")
 
-        }
+        };
 
         this.blockSpec = props.blockSpec;
 
         this.updateBlockSpec = props.updateBlockSpec;
 
+
         this.onClickMenu = this.onClickMenu.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.handleApplyConfiguration = this.handleApplyConfiguration.bind(this);
+        this.handleBlockContextUpdated = this.handleBlockContextUpdated.bind(this);
+
+        this.props.blockEvents.bind("block-context-updated", this.handleBlockContextUpdated);
+    }
+
+
+    componentDidMount() {
+
+    }
+    componentWillUnmount() {
+        this.props.blockEvents.unbind("block-context-updated", this.handleBlockContextUpdated);
+    }
+
+    handleBlockContextUpdated(e) {
+        if (e === 'supportedModes') {
+            this.setState({
+                editSupported: this.props.blockContext.isModeSupported("edit")
+            });
+        }
     }
 
     handleSelect(eventKey) {
@@ -61,9 +82,12 @@ class BlockMenu extends React.Component {
     // }
     render() {
 
+        // console.log("XXX: " + JSON.stringify(this.getBlockContext().isModeSupported("")));
+
+
         return (
             <div className="block-menu">
-                <Nav bsStyle="" activeKey={this.props.mode} onSelect={this.handleSelect}>
+                <Nav bsStyle="pills" activeKey={this.props.mode} onSelect={this.handleSelect}>
 
                     {/*
                     <NavItem eventKey="view" title="View">View</NavItem>
@@ -72,7 +96,7 @@ class BlockMenu extends React.Component {
                     <NavDropdown eventKey="actions" title="Actions" id={`block-${this.blockSpec.id}-actions-dd`}>
                         <MenuItem eventKey="configuration" >Configuration</MenuItem>
                         <MenuItem divider />
-                        <MenuItem eventKey="edit" disabled={this.props.mode === 'edit'}>Edit</MenuItem>
+                        {this.state.editSupported && (<MenuItem eventKey="edit" disabled={this.props.mode === 'edit'}>Edit</MenuItem>)}
 
                         {/*
 

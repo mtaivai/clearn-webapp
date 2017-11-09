@@ -21,6 +21,21 @@ import DashBoardLayoutTemplate from '../templates/DashBoardLayoutTemplate'
 
 import './Layout.css'
 
+class RenderContext {
+    constructor(render, props) {
+        this.render = render;
+        this.props = props || {};
+        this.zone = this.props.zone;
+        // console.log("RenderContext " + RenderContext.counter + "; zone=" + this.zone);
+        RenderContext.counter++;
+    }
+    getZone() {
+        // console.log("RenderContext " + RenderContext.counter + "; getZone=" + this.zone);
+        return this.zone;
+    }
+}
+RenderContext.counter = 0;
+
 class LayoutZoneBlockWrapper {
 
     constructor(props) {
@@ -33,11 +48,18 @@ class LayoutZoneBlockWrapper {
     getBlockId() {
         return this.blockSpec.id;
     }
+    getLayoutOptions() {
+        return this.blockSpec.layoutOptions || {};
+    }
+    getLayoutTemplate() {
+        return undefined;
+    }
 
     render() {
         // console.log("LayoutZoneBlockWrapper.render(); blockId=" + this.blockSpec.id);
         var result;
         if (typeof(this.decorate) === 'function') {
+            // console.log("***LayoutZoneBlockWrapper.decorate=" + this.decorate);
             result = this.decorate(this.renderBlock);
         } else {
             result = this.renderBlock();
@@ -51,6 +73,34 @@ class LayoutZoneBlockWrapper {
         return (null);
     }
 }
+//
+// class LayoutZoneBlockGroupWrapper {
+//
+//     constructor(props) {
+//         this.zoneWrapper = props.zoneWrapper;
+//         this.groupId = props.groupId;
+//     }
+//     getGroupId() {
+//         return this.groupId;
+//     }
+//
+//     render(layoutTemplate) {
+//         var result;
+//         if (typeof(layoutTemplate.decorateBlockGroup) === 'function') {
+//             // console.log("***LayoutZoneBlockWrapper.decorate=" + this.decorate);
+//             result = this.decorate(this.renderBlock);
+//         } else {
+//             result = this.renderBlock();
+//         }
+//         this.rendered = true;
+//         return result;
+//     }
+//     renderBlockGroup() {
+//         console.error("Warning: LayoutZoneBlockGroupWrapper has unbound renderBlockGroup method");
+//         return (null);
+//     }
+//
+// }
 
 class LayoutZoneWrapper {
 
@@ -58,22 +108,162 @@ class LayoutZoneWrapper {
         this.zoneId = props.zoneId;
         this.blockWrappers = [];
         this.decorate = props.decorate;
-        this.decorateBlockGroup = props.decorateBlockGroup;
+        // this.decorateBlockGroup = props.decorateBlockGroup;
         this.rendered = false;
+        this.getBlockGroup = props.getBlockGroup;
+        // this.renderBlockGroups = props.renderBlockGroups;
+
+        this.layoutTemplate = props.layoutTemplate;
+
+        this.layoutOptions = {};
+        if (props.zoneOptions) {
+            const defaultOpts = props.zoneOptions["default"];
+            if (defaultOpts) {
+                for (let key in defaultOpts) {
+                    if (defaultOpts.hasOwnProperty(key)) {
+                        this.layoutOptions[key] = defaultOpts[key];
+                    }
+                }
+            }
+            const zoneOpts = props.zoneOptions[props.zoneId];
+            if (zoneOpts) {
+                for (let key in zoneOpts) {
+                    if (zoneOpts.hasOwnProperty(key)) {
+                        this.layoutOptions[key] = zoneOpts[key];
+                    }
+                }
+            }
+
+        }
     }
 
+    getLayoutOptions() {
+        return this.layoutOptions;
+    }
+
+    getZoneId() {
+        return this.zoneId;
+    }
+
+
     render() {
-        const renderBlocks = () => {
-            const blockComponents = [];
-            this.blockWrappers.forEach((blockWrapper) => {
-                blockComponents.push(blockWrapper.render());
+
+        if (!this.layoutTemplate) {
+            console.error("Error: ZoneWrapper is not bound to a LayoutTemplate");
+            return (null);
+        }
+
+        const zone = this;
+
+
+        // const RenderContext = function(render) {
+        //     this.getZone = function() {
+        //         return zone;
+        //     }
+        //     this.render = render;
+        // }
+
+        const defaultRenderBlockGroups = (blockGroups) => {
+            const result = [];
+            blockGroups.forEach((g) => {
+                result.push(g.render());
             });
-            if (typeof(this.decorateBlockGroup) === 'function') {
-                return this.decorateBlockGroup(() => blockComponents);
+            return result;
+        };
+        const renderBlockGroups = this.layoutTemplate.renderBlockGroups || defaultRenderBlockGroups;
+
+
+        const renderBlocks = () => {
+
+            // Create block groups
+            if (this.layoutTemplate.decorateBlockGroup) {
+
+                const blockGroups = {};
+                let prevBlockGroup;
+                this.blockWrappers.forEach((blockWrapper) => {
+
+                    let blockGroup;
+                    if (this.layoutTemplate.getBlockGroup) {
+                        blockGroup = this.layoutTemplate.getBlockGroup(blockWrapper) || prevBlockGroup;
+                    }
+                    blockGroup = blockGroup || "default";
+
+                    prevBlockGroup = blockGroup;
+
+                    if (!blockGroups[blockGroup]) {
+                        blockGroups[blockGroup] = [];
+                    }
+                    blockGroups[blockGroup].push(blockWrapper);
+                });
+
+                const result = [];
+
+                const blockGroupRenderObjs = [];
+
+                for (let blockGroup in blockGroups) {
+
+                    // layoutTemplate.renderBlockGroups();
+                    if (blockGroups.hasOwnProperty(blockGroup)) {
+
+                        const blockWrappers = blockGroups[blockGroup];
+
+                        blockGroupRenderObjs.push({
+                            name: blockGroup,
+                            blocks: blockWrappers,
+                            render: () => {
+
+                                const renderCtx = new RenderContext(
+                                    (wrappers) => (wrappers || blockWrappers).map((w) => w.render()),
+                                    {zone: zone});
+
+                                return this.layoutTemplate.decorateBlockGroup(renderCtx, blockGroup, blockWrappers);
+
+                            }
+                        });
+
+                        // const renderCtx = new RenderContext(
+                        //     (ws) => (ws || blockWrappers).map((w) => w.render(layoutTemplate)),
+                        //     {zone: zone});
+                        //
+                        // result.push(
+                        //     this.decorateBlockGroup(
+                        //         renderCtx, blockGroup, blockWrappers));
+                    }
+                }
+
+                result.push(renderBlockGroups(blockGroupRenderObjs));
+
+                return result;
             } else {
-                return blockComponents;
+
+
+                return renderBlockGroups([{
+                    name: "",
+                    blocks: this.blockWrappers,
+                    render: () => {
+                        const result = [];
+                        this.blockWrappers.forEach((blockWrapper) => {
+                            result.push(blockWrapper.render());
+                        });
+                        return result;
+                    }
+                }]);
+
+                // this.blockWrappers.forEach((blockWrapper) => {
+                //     result.push(blockWrapper.render(layoutTemplate));
+                // });
+                // return result;
             }
         };
+
+        // const renderBlocksWithCallbacks = () => {
+        //     layoutTemplate.onBeginZone(this);
+        //     try {
+        //         return renderBlocks();
+        //     } finally {
+        //         layoutTemplate.onEndZone(this);
+        //     }
+        // };
         // console.log(`LayoutZoneWrapper.render(); zoneId = ${this.zoneId}`);
 
         // return (
@@ -83,16 +273,17 @@ class LayoutZoneWrapper {
         //         </div>
         //     </div>
         // );
-        const renderComponent = () => (
+        const renderComponent = (layout) => (
             <div key={this.zoneId} className={`zone zone-${this.zoneId}`}>
-                {renderBlocks()}
+                {renderBlocks(layout)}
             </div>
         );
+
         var result;
         if (typeof(this.decorate) === 'function') {
-            result = this.decorate(renderComponent, this.zoneId);
+            result = this.decorate(this, renderComponent);
         } else {
-            result =  renderComponent();
+            result = renderComponent();
         }
         this.rendered = true;
         return result;
@@ -153,6 +344,8 @@ class Layout extends React.Component {
 
     getThemeOrLayoutTemplateConfig(config, classNameSuffix, getClass, getDefaultConfig) {
 
+        // TODO cache required classes!
+
         if (!config) {
             config = getDefaultConfig ? getDefaultConfig() : {name: "Default", options: {}};
         }
@@ -190,7 +383,7 @@ class Layout extends React.Component {
         return obj;
     }
 
-    getLayoutTemplate() {
+    createLayoutTemplate() {
 
         return this.getThemeOrLayoutTemplateConfig(
             this.state.layout && this.state.layout['layoutTemplate'],
@@ -198,7 +391,7 @@ class Layout extends React.Component {
             (className) => require('../templates/' + className).default);
     }
 
-    getTheme() {
+    createTheme() {
         // const Class = require('../themes/DefaultTheme').default;
         // const obj = new Class({});
         // return obj;
@@ -226,8 +419,8 @@ class Layout extends React.Component {
     render() {
         // TODO we should cache lots of stuff between renders!
 
-        const layoutTemplate = this.getLayoutTemplate();
-        const theme = this.getTheme();
+        const layoutTemplate = this.createLayoutTemplate();
+        const theme = this.createTheme();
 
         this.applyThemeOnDocument(theme);
 
@@ -238,64 +431,46 @@ class Layout extends React.Component {
         const zones = layoutInfo.zones;
         const defaultZone = layoutInfo.defaultZone;
 
+        // TODO change zoneWrappers to array?
         const zoneWrappers = this.mapLayoutZones(zones, defaultZone);
-
 
 
         // Add span (distribute to rows and cols)
 
+        if (!this.state.layout) {
 
+            return (<div>Loading</div>);
+        }
 
         for (var zoneId in zoneWrappers) {
 
+            if (!zoneWrappers.hasOwnProperty(zoneId)) {
+                continue;
+            }
+
             const zoneWrapper = zoneWrappers[zoneId];
+
+            // Bind LayoutTemplate to wrapper:
+            zoneWrapper.layoutTemplate = layoutTemplate;
+
 
             if (typeof(layoutTemplate.decorateZone) === 'function') {
 
-                zoneWrapper.decorate = (render, zoneId) => {
-                    return layoutTemplate.decorateZone(render, zoneId);
-                };
-            }
-            if (typeof(layoutTemplate.decorateBlockGroup) === 'function') {
 
-                zoneWrapper.decorateBlockGroup = (render) => {
-                    return layoutTemplate.decorateBlockGroup(render);
+                zoneWrapper.decorate = (zone, render) => {
+                    const renderContext = new RenderContext(render, {zone: zone});
+                    return layoutTemplate.decorateZone(renderContext, zone);
                 };
             }
 
             zoneWrapper.blockWrappers.forEach((blockWrapper) => {
-                //console.log(`Zone ${zone} block: ${block.blockSpec.id}`);
                 const blockSpec = blockWrapper.blockSpec;
 
-                // var span;
-                // if (blockSpec.layoutOptions && blockSpec.layoutOptions.span) {
-                //     span = blockSpec.layoutOptions.span;
-                // } else {
-                //     span = defaultSpan;
-                // }
-                // if (span < minSpan) {
-                //     span = minSpan;
-                // }
-                // else if (span > maxSpan) {
-                //     span = maxSpan;
-                // }
-                //
-                // //const span = 4;//blockSpec.layout.span;
-                //
-                // const spanClass = `block-wrapper col-md-${span}`;
-                //
-                // blockWrapper.decorate = (render) => {
-                //     return (
-                //         <div key={blockSpec.id} className={spanClass}>
-                //             {render()}
-                //         </div>
-                //     )
-                // };
-
                 if (typeof(layoutTemplate.decorateBlock) === 'function') {
-
                     blockWrapper.decorate = (render) => {
-                        return layoutTemplate.decorateBlock(render, blockSpec);
+
+                        const renderContext = new RenderContext(render, {zone: zoneWrapper});
+                        return layoutTemplate.decorateBlock(renderContext, blockSpec, zoneWrapper);
                     };
                 }
 
@@ -318,7 +493,8 @@ class Layout extends React.Component {
         }
 
         var result = (
-            <div className={`Layout ${theme.getFullName()}`}
+            <div
+                className={`Layout Layout-${layoutTemplate.getName()} ${layoutTemplate.getFullName()} Theme-${theme.getName()} ${theme.getFullName()}`}
                 theme={theme.getName()}>
                 <div className={`Theme`}>
                     {theme.render && theme.render()}
@@ -331,6 +507,9 @@ class Layout extends React.Component {
         );
 
         for (var zoneId in zoneWrappers) {
+            if (!zoneWrappers.hasOwnProperty(zoneId)) {
+                continue;
+            }
             const zoneWrapper = zoneWrappers[zoneId];
             if (!zoneWrapper.rendered) {
                 console.error(`Warning: zone '${zoneId}' not rendered by layout template '${layoutTemplate.getName()}'`);
@@ -344,6 +523,8 @@ class Layout extends React.Component {
         }
 
         return result;
+
+
 
     }
 
@@ -362,12 +543,23 @@ class Layout extends React.Component {
 
         const map = {};
 
+
+        var zoneOptions;
+
+        if (layout) {
+            const layoutTemplateConfig = layout["layoutTemplate"] || {};
+            const layoutTemplateOptions = layoutTemplateConfig["options"] || {};
+            zoneOptions = layoutTemplateOptions["zoneOptions"] || {};
+        } else {
+            zoneOptions = {};
+        }
+
         zoneIds.forEach((zoneId) => {
-            map[zoneId] = new LayoutZoneWrapper({zoneId: zoneId});
-        })
+            map[zoneId] = new LayoutZoneWrapper({zoneId: zoneId, zoneOptions: zoneOptions});
+        });
 
         if (defaultZoneId && typeof(map[defaultZoneId]) === 'undefined') {
-            map[defaultZoneId] = new LayoutZoneWrapper({zoneId: defaultZoneId});
+            map[defaultZoneId] = new LayoutZoneWrapper({zoneId: defaultZoneId, zoneOptions: zoneOptions});
         }
 
         if (!layout) {
@@ -395,7 +587,7 @@ class Layout extends React.Component {
 
             // console.log(`Mapping ${blockSpec.id} from ${targetZone} to ${mappedZone}`);
 
-            if (typeof(mappedZone) !== 'undefined') {
+            if (mappedZone) {
 
                 const blockWrapper = new LayoutZoneBlockWrapper({
                     blockSpec: blockSpec,

@@ -19,6 +19,7 @@ class DashBoardLayoutTemplate extends DefaultLayoutTemplate {
         this.showFooter = options.showFooter;
         this.showSidebar = options.showSidebar;
 
+        // this.decorateBlockGroup = undefined;
         // this.decorateZone = undefined;
         // this.decorateBlockGroup = undefined;
 
@@ -43,7 +44,7 @@ class DashBoardLayoutTemplate extends DefaultLayoutTemplate {
                 <div className={"container-fluid"}>
                     <div className={"row"}>
                         <div className="col-md-10 col-md-offset-2">
-                            {zones["footer"].render()}
+                            {zones["footer"].render(this)}
                         </div>
                     </div>
                 </div>
@@ -61,10 +62,10 @@ class DashBoardLayoutTemplate extends DefaultLayoutTemplate {
                     <div className="container-fluid main">
                         <div className="row">
                             <nav className="col-xs-3 col-sm-3 col-md-2 hidden-xs-down bg-faded zone-wrapper-sidebar">
-                                {zones["sidebar"].render()}
+                                {zones["sidebar"].render(this)}
                             </nav>
                             <main className="col-xs-9 col-sm-9 col-xs-offset-3 col-sm-offset-3 col-md-10 col-md-offset-2 pt-3">
-                                {zones["main"].render()}
+                                {zones["main"].render(this)}
                             </main>
                         </div>
 
@@ -75,7 +76,7 @@ class DashBoardLayoutTemplate extends DefaultLayoutTemplate {
                 return (
                     <div className="container main">
                         <main>
-                            {zones["main"].render()}
+                            {zones["main"].render(this)}
                         </main>
                     </div>
                 );
@@ -84,12 +85,14 @@ class DashBoardLayoutTemplate extends DefaultLayoutTemplate {
         }
 
         return (
-          <div>
+          <div className={"zones"}>
+
               <nav className="zone-wrapper-header navbar navbar-toggleable-md navbar-inverse fixed-top bg-inverse">
                   {zones["header"].render()}
               </nav>
 
               {renderMain()}
+
               {this.renderFooter(zones)}
 
 
@@ -97,8 +100,21 @@ class DashBoardLayoutTemplate extends DefaultLayoutTemplate {
         );
     }
 
-    decorateZone(render, zoneId) {
-        return render();
+    decorateZone(renderContext, zone) {
+        const zoneId = zone.getZoneId();
+        console.log("DZ: " + zoneId);
+        switch (zoneId) {
+            case 'header':
+            case 'footer':
+            case 'main':
+            case 'sidebar':
+                // Don't decorate; we have custom rendering for these
+                return renderContext.render();
+            default:
+                return super.decorateZone(renderContext, zone);
+        }
+
+        //return super.decorateZone(renderContext, zoneId);
 
         // const undecorated = render();
         //

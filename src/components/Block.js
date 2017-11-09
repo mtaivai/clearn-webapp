@@ -1,17 +1,80 @@
-import React from 'react'
+import React from 'react';
+import ReactDOM from 'react-dom';
+
 import PropTypes from 'prop-types'
 import MicroEvent from '../microevent.js';
 import {Button, ButtonToolbar} from 'react-bootstrap'
 
 import ContentBlock from './ContentBlock'
-import StaticContentBlock from './StaticContentBlock'
+// import StaticContentBlock from './StaticContentBlock'
 import UnknownBlock from './UnknownBlock'
 
 import BlockMenu from './BlockMenu'
 
 import './Block.css'
 
+class BlockContext {
 
+    constructor(onChanged) {
+        this.actions = [];
+        this.supportedModes = ['view'];
+        this.onChanged = onChanged;
+    }
+    addSupportedModes(modes) {
+        if (Array.isArray(modes)) {
+            let changed = false;
+            modes.forEach((mode) => {
+                mode = ("" + mode).trim();
+                if (this.supportedModes.indexOf(mode) < 0) {
+                    this.supportedModes.push(mode);
+                    changed = true;
+                }
+            });
+            if (changed) {
+                this.onChanged("supportedModes");
+
+            }
+        } else {
+            this.addSupportedModes(("" + modes).split(/[,\s]/));
+        }
+    }
+    isModeSupported(mode) {
+        if (!mode) {
+            return false;
+        }
+        mode = ("" + mode).trim();
+        return this.supportedModes.indexOf(mode) >= 0;
+    }
+
+    addAction(action) {
+        if (!action.name || action.name.length == 0) {
+            throw new Error("action.name is required");
+        }
+        action.edit = (props) => {
+            if (typeof(props.enabled) !== 'undefined') {
+                action.enabled = props.enabled;
+            }
+            if (typeof(props.label) !== 'undefined') {
+                action.label = props.label;
+            }
+            if (typeof(props.perform) !== 'undefined') {
+                action.perform = props.perform;
+            }
+            return action;
+        };
+        this.actions.push(action);
+        return action;
+    }
+    addEdit(perform) {
+        return this.addAction({
+            name: "edit",
+            enabled: true,
+            label: "Edit",
+            perform: perform
+        });
+    }
+
+}
 
 
 class BlockEvents extends MicroEvent {
@@ -41,18 +104,32 @@ class Block extends React.Component {
             //blockComponent: null,
             mode: "view"
 
-        }
+        };
+        // view | edit
+        // this.supportedModes = ["view"];
 
         //this.updateLayout = props.onLayoutConfigurationUpdated;
 
         // this.blockSpec = props.blockSpec;
+
+        this.events = new BlockEvents();
+
+        this.blockContext = new BlockContext((p) => {
+            this.events.trigger("block-context-updated", p);
+        });
+
+
         this.setMode = this.setMode.bind(this);
         this.onDoneEdit = this.onDoneEdit.bind(this);
         this.onCancelEdit = this.onCancelEdit.bind(this);
         this.updateBlockSpec = this.updateBlockSpec.bind(this);
 
-        this.events = new BlockEvents();
+        // this.isModeSupported = this.isModeSupported.bind(this);
     }
+
+    // isModeSupported(mode) {
+    //     return this.blockContext.isModeSupported(mode);
+    // }
 
     getMode() {
         return this.state.mode;
@@ -105,33 +182,54 @@ class Block extends React.Component {
         props.mode = this.state.mode;
         props.blockEvents = this.events;
 
+
+        props.blockContext = this.blockContext;
+
         const type = blockSpec.type;
         const blockId = blockSpec.id;
+
+        props.key = blockId;
+
         // const configuration = blockSpec.configuration;
 
-        if (type === 'ContentBlock') {
-            return (
-                <ContentBlock key={blockId} {...props}/>
-            )
-        } else if (type === 'StaticContentBlock') {
-
-            return (
-                <StaticContentBlock key={blockId} {...props}/>
-            )
-        } else {
-            return (<UnknownBlock key={blockId} {...props}/>)
+        let ComponentClass = Block.cachedComponentClasses[type];
+        if (!ComponentClass) {
+            try {
+                ComponentClass = require('./' + type).default;
+            } catch (err) {
+                console.error(`Can't create Block ${blockId} Component : ` + err);
+            }
         }
+
+        if (ComponentClass) {
+            if (ComponentClass.supportedModes) {
+                this.blockContext.addSupportedModes(ComponentClass.supportedModes);
+            }
+            return React.createElement(ComponentClass, props, null);
+        } else {
+            return (<UnknownBlock {...props}/>)
+        }
+
+        // if (type === 'ContentBlock') {
+        //     return (
+        //         <ContentBlock key={blockId} {...props}/>
+        //     )
+        // } else if (type === 'StaticContentBlock') {
+        //
+        //     return (
+        //         <StaticContentBlock key={blockId} {...props}/>
+        //     )
+        // } else {
+        //     return (<UnknownBlock key={blockId} {...props}/>)
+        // }
     }
 
 
 
     updateBlockSpec(blockSpec) {
-        console.log("Block.updateBlockSpec: " + JSON.stringify(blockSpec));
 
         this.props.layoutRepository.updateBlock(this.props.layoutId, this.props.blockSpec.id, blockSpec)
             .then((updated, updatedBlock) => {
-                //this.forceUpdate();
-                console.log("Updated: " + updated);
                 // Notify (parent) listener:
                 if (updated) {
                     if (this.props.onLayoutConfigurationUpdated) {
@@ -146,6 +244,7 @@ class Block extends React.Component {
     }
 
 
+
     wrapBlockComponent(component) {
         const blockSpec = this.props.blockSpec;
 
@@ -155,6 +254,7 @@ class Block extends React.Component {
         if (mode === 'edit') {
             cssClass += " edit";
         }
+
 
         return (
             <div className={cssClass}>
@@ -166,8 +266,10 @@ class Block extends React.Component {
 
                         <BlockMenu
                             blockSpec={blockSpec}
+                            blockContext={this.blockContext}
                             mode={this.state.mode}
                             setMode={this.setMode}
+                            blockEvents={this.events}
                             updateBlockSpec={this.updateBlockSpec}/>
                     </div>
                 </div>
@@ -218,6 +320,8 @@ class Block extends React.Component {
 
 
 }
+
+Block.cachedComponentClasses = {};
 
 
 Block.propTypes = {

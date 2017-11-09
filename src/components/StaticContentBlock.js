@@ -5,9 +5,17 @@ import './StaticContentBlock.css';
 
 import {FormGroup, FormControl, ControlLabel, HelpBlock} from 'react-bootstrap'
 
+
+
+
 class StaticContentBlock extends React.Component {
     constructor(props) {
         super(props);
+
+        // props.actions.addEdit(() => this.setState({mode: "edit"}));
+
+        this.props.blockContext.addSupportedModes("Foo");
+
         this.state = {
            // mode: 'edit'
             contentBodyText: this.props.blockSpec.configuration.contentBodyText
@@ -16,15 +24,18 @@ class StaticContentBlock extends React.Component {
         this.handleEditModeEvent = this.handleEditModeEvent.bind(this);
     }
 
+
+
     componentDidMount() {
         this.props.blockEvents.bind("edit-mode", this.handleEditModeEvent);
+
+
     }
     componentWillUnmount() {
-        this.props.blockEvents.bind("edit-mode", this.handleEditModeEvent);
+        this.props.blockEvents.unbind("edit-mode", this.handleEditModeEvent);
     }
 
     handleEditModeEvent(e) {
-        console.log("handleEditModeEvent: " + e);
         if (e === 'cancel') {
             this.setState({contentBodyText: this.props.blockSpec.configuration.contentBodyText});
         } else if (e === 'save') {
@@ -100,5 +111,7 @@ class StaticContentBlock extends React.Component {
         )
     }
 }
+
+StaticContentBlock.supportedModes = ["view", "edit"];
 
 export default StaticContentBlock

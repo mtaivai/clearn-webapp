@@ -36,6 +36,41 @@ body.DefaultTheme {
     box-shadow: 5px 5px 5px 0px rgba(200,200,200,1);
   }
 
+  .zone-wrapper {
+    .zone-wrapper-header,
+    .zone-wrapper-footer {
+      width: 100%;
+      margin-left: 0px;
+      margin-top: 0px;
+    }
+  }
+
+  .block-wrapper {
+    border: 1px solid yellow;
+    &:hover {
+      //background-color: #f0f0ff;
+      border: 1px dotted #a0a0f0;
+      //margin-top: -1px;
+      //border-right: 4px solid #a0a0ff;
+    }
+
+    &.block-dropzone-wrapper {
+      height: 100%;
+      border: 1px dotted #3958e1;
+      display: block;
+
+      &:hover {
+        border: 1px solid #0d17c4;
+        background-color: #334cf7;
+      }
+      >.block-dropzone {
+        padding-bottom: 100%;
+      }
+    }
+
+  }
+
+
   .Block {
 
     margin: 1px 1px 1px 1px;
@@ -152,9 +187,12 @@ body.DefaultTheme {
                   a {
                     background-color: inherit;
                   }
-                  a:hover {
+                  a {
                     background-color: black;
                     color:white;
+                    &:hover {
+
+                    }
                   }
                 }
               }

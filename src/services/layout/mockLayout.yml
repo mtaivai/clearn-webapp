@@ -14,18 +14,35 @@ home:
   layoutTemplate:
     name: "DashBoard"
     options:
-      showSidebar: false
+      showSidebar: true
       showFooter: true
-      #fixedFooter: true
+      fixedFooter: true
       #showHeader: false
-      #fixedHeader: false
+      fixedHeader: true
+      zoneOptions:
+        default:
+          layoutType: flow
+          defaultColumnOffset: prev # 'prev' | 'first' | 'last' | 'next' | # ; default = 'prev'
+        main:
+          layoutType: grid
+          gridColumns: 1 # 'auto' | #
+        footer:
+          layoutType: grid
+          defaultColumnOffset: next
+          gridColumns:
+            - 2
+            - 8
+            - 2
+
   blocks:
     - id: 101
       type: ContentBlock
       title: "Some content block here"
       layoutOptions:
         targetZone: main
-        span: 12
+        columnSpan: 2 # not valid for 'grid'
+        columnOffset: 6
+        row: 2
       configuration:
         contentClass: Document
         contentId: 6
@@ -33,7 +50,9 @@ home:
       type: ContentBlock
       layoutOptions:
         targetZone: main
-        span: 12
+        columnSpan: 2
+        columnOffset: 1
+        row: 1
       configuration:
         contentClass: Document
         contentId: 7
@@ -41,7 +60,7 @@ home:
       type: ContentPublisher
       layoutOptions:
         targetZone: "news"
-        span: 12
+        columnSpan: 12
       configuration:
         filters:
           - target: ""
@@ -67,7 +86,7 @@ home:
       title: "Some static content 1"
       layoutOptions:
         targetZone: "header"
-        span: 6
+        columnSpan: 6
       configuration:
         contentType: "text/html"
         contentBodyText: "<span>Header content here</span>"
@@ -76,7 +95,7 @@ home:
       title: "Some static content 2"
       layoutOptions:
         targetZone: "header"
-        span: 6
+        columnSpan: 6
       configuration:
         contentType: "text/html"
         contentBodyText: "<span>Another header content here</span>"
@@ -85,7 +104,7 @@ home:
       title: "Some static content 3"
       layoutOptions:
         targetZone: "footer"
-        span: 4
+        columnSpan: 4
       configuration:
         contentType: "text/html"
         contentBodyText: "One"
@@ -94,7 +113,7 @@ home:
       title: "Some static content 4"
       layoutOptions:
         targetZone: "footer"
-        span: 4
+        columnSpan: 4
       configuration:
         contentType: "text/html"
         contentBodyText: "Two"
@@ -103,7 +122,7 @@ home:
       title: "Some static content 5"
       layoutOptions:
         targetZone: "footer"
-        span: 4
+        columnSpan: 4
       configuration:
         contentType: "text/html"
         contentBodyText: "Three"
@@ -112,7 +131,7 @@ home:
       title: "Some static content 6"
       layoutOptions:
         targetZone: "SomeOtherZone"
-        span: 4
+        columnSpan: 4
       configuration:
         contentType: "text/html"
         contentBodyText: "Three"
@@ -121,7 +140,7 @@ home:
       title: "Side navi"
       layoutOptions:
         targetZone: "sidebar"
-        span: 4
+        columnSpan: 4
       configuration:
         contentType: "text/html"
         contentBodyText: "Three"
