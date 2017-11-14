@@ -4,20 +4,15 @@ import PropTypes from 'prop-types'
 import LayoutRepository from '../services/layout/LayoutRepository'
 import ContentRepository from '../services/content/ContentRepository'
 
-// import Todo from './Todo'
-
-//import './ContentBlock.css';
-//import MicroEvent from '../microevent.js';
-//import ContentBlockBody from './ContentBlockBody'
-//import ContentBlockHeader from './ContentBlockHeader'
-//import ContentBlockFooter from './ContentBlockFooter'
 import {Helmet} from 'react-helmet'
 
 import Block from './Block'
 
-import LayoutTemplate from './LayoutTemplate'
-import DefaultLayoutTemplate from '../templates/DefaultLayoutTemplate'
-import DashBoardLayoutTemplate from '../templates/DashBoardLayoutTemplate'
+import StringUtils from '../util/StringUtils'
+
+// import LayoutTemplate from './LayoutTemplate'
+import LayoutZoneWrapper from './LayoutZoneWrapper';
+import LayoutZoneBlockWrapper from './LayoutZoneBlockWrapper';
 
 import './Layout.css'
 
@@ -26,276 +21,19 @@ class RenderContext {
         this.render = render;
         this.props = props || {};
         this.zone = this.props.zone;
-        // console.log("RenderContext " + RenderContext.counter + "; zone=" + this.zone);
-        RenderContext.counter++;
+    }
+
+    getZoneTemplate() {
+        return this.zone && this.zone.getZoneTemplate();
     }
     getZone() {
         // console.log("RenderContext " + RenderContext.counter + "; getZone=" + this.zone);
         return this.zone;
     }
 }
-RenderContext.counter = 0;
-
-class LayoutZoneBlockWrapper {
-
-    constructor(props) {
-        this.renderBlock = props.renderBlock;
-        this.blockSpec = props.blockSpec;
-        this.decorate = props.decorate;
-        this.rendered = false;
-    }
-
-    getBlockId() {
-        return this.blockSpec.id;
-    }
-    getLayoutOptions() {
-        return this.blockSpec.layoutOptions || {};
-    }
-    getLayoutTemplate() {
-        return undefined;
-    }
-
-    render() {
-        // console.log("LayoutZoneBlockWrapper.render(); blockId=" + this.blockSpec.id);
-        var result;
-        if (typeof(this.decorate) === 'function') {
-            // console.log("***LayoutZoneBlockWrapper.decorate=" + this.decorate);
-            result = this.decorate(this.renderBlock);
-        } else {
-            result = this.renderBlock();
-        }
-        this.rendered = true;
-        return result;
-    }
-
-    renderBlock() {
-        console.error("Warning: LayoutZoneBlockWrapper has unbound renderBlock method");
-        return (null);
-    }
-}
-//
-// class LayoutZoneBlockGroupWrapper {
-//
-//     constructor(props) {
-//         this.zoneWrapper = props.zoneWrapper;
-//         this.groupId = props.groupId;
-//     }
-//     getGroupId() {
-//         return this.groupId;
-//     }
-//
-//     render(layoutTemplate) {
-//         var result;
-//         if (typeof(layoutTemplate.decorateBlockGroup) === 'function') {
-//             // console.log("***LayoutZoneBlockWrapper.decorate=" + this.decorate);
-//             result = this.decorate(this.renderBlock);
-//         } else {
-//             result = this.renderBlock();
-//         }
-//         this.rendered = true;
-//         return result;
-//     }
-//     renderBlockGroup() {
-//         console.error("Warning: LayoutZoneBlockGroupWrapper has unbound renderBlockGroup method");
-//         return (null);
-//     }
-//
-// }
-
-class LayoutZoneWrapper {
-
-    constructor(props) {
-        this.zoneId = props.zoneId;
-        this.blockWrappers = [];
-        this.decorate = props.decorate;
-        // this.decorateBlockGroup = props.decorateBlockGroup;
-        this.rendered = false;
-        this.getBlockGroup = props.getBlockGroup;
-        // this.renderBlockGroups = props.renderBlockGroups;
-
-        this.layoutTemplate = props.layoutTemplate;
-
-        this.layoutOptions = {};
-        if (props.zoneOptions) {
-            const defaultOpts = props.zoneOptions["default"];
-            if (defaultOpts) {
-                for (let key in defaultOpts) {
-                    if (defaultOpts.hasOwnProperty(key)) {
-                        this.layoutOptions[key] = defaultOpts[key];
-                    }
-                }
-            }
-            const zoneOpts = props.zoneOptions[props.zoneId];
-            if (zoneOpts) {
-                for (let key in zoneOpts) {
-                    if (zoneOpts.hasOwnProperty(key)) {
-                        this.layoutOptions[key] = zoneOpts[key];
-                    }
-                }
-            }
-
-        }
-    }
-
-    getLayoutOptions() {
-        return this.layoutOptions;
-    }
-
-    getZoneId() {
-        return this.zoneId;
-    }
-
-
-    render() {
-
-        if (!this.layoutTemplate) {
-            console.error("Error: ZoneWrapper is not bound to a LayoutTemplate");
-            return (null);
-        }
-
-        const zone = this;
-
-
-        // const RenderContext = function(render) {
-        //     this.getZone = function() {
-        //         return zone;
-        //     }
-        //     this.render = render;
-        // }
-
-        const defaultRenderBlockGroups = (blockGroups) => {
-            const result = [];
-            blockGroups.forEach((g) => {
-                result.push(g.render());
-            });
-            return result;
-        };
-        const renderBlockGroups = this.layoutTemplate.renderBlockGroups || defaultRenderBlockGroups;
-
-
-        const renderBlocks = () => {
-
-            // Create block groups
-            if (this.layoutTemplate.decorateBlockGroup) {
-
-                const blockGroups = {};
-                let prevBlockGroup;
-                this.blockWrappers.forEach((blockWrapper) => {
-
-                    let blockGroup;
-                    if (this.layoutTemplate.getBlockGroup) {
-                        blockGroup = this.layoutTemplate.getBlockGroup(blockWrapper) || prevBlockGroup;
-                    }
-                    blockGroup = blockGroup || "default";
-
-                    prevBlockGroup = blockGroup;
-
-                    if (!blockGroups[blockGroup]) {
-                        blockGroups[blockGroup] = [];
-                    }
-                    blockGroups[blockGroup].push(blockWrapper);
-                });
-
-                const result = [];
-
-                const blockGroupRenderObjs = [];
-
-                for (let blockGroup in blockGroups) {
-
-                    // layoutTemplate.renderBlockGroups();
-                    if (blockGroups.hasOwnProperty(blockGroup)) {
-
-                        const blockWrappers = blockGroups[blockGroup];
-
-                        blockGroupRenderObjs.push({
-                            name: blockGroup,
-                            blocks: blockWrappers,
-                            render: () => {
-
-                                const renderCtx = new RenderContext(
-                                    (wrappers) => (wrappers || blockWrappers).map((w) => w.render()),
-                                    {zone: zone});
-
-                                return this.layoutTemplate.decorateBlockGroup(renderCtx, blockGroup, blockWrappers);
-
-                            }
-                        });
-
-                        // const renderCtx = new RenderContext(
-                        //     (ws) => (ws || blockWrappers).map((w) => w.render(layoutTemplate)),
-                        //     {zone: zone});
-                        //
-                        // result.push(
-                        //     this.decorateBlockGroup(
-                        //         renderCtx, blockGroup, blockWrappers));
-                    }
-                }
-
-                result.push(renderBlockGroups(blockGroupRenderObjs));
-
-                return result;
-            } else {
-
-
-                return renderBlockGroups([{
-                    name: "",
-                    blocks: this.blockWrappers,
-                    render: () => {
-                        const result = [];
-                        this.blockWrappers.forEach((blockWrapper) => {
-                            result.push(blockWrapper.render());
-                        });
-                        return result;
-                    }
-                }]);
-
-                // this.blockWrappers.forEach((blockWrapper) => {
-                //     result.push(blockWrapper.render(layoutTemplate));
-                // });
-                // return result;
-            }
-        };
-
-        // const renderBlocksWithCallbacks = () => {
-        //     layoutTemplate.onBeginZone(this);
-        //     try {
-        //         return renderBlocks();
-        //     } finally {
-        //         layoutTemplate.onEndZone(this);
-        //     }
-        // };
-        // console.log(`LayoutZoneWrapper.render(); zoneId = ${this.zoneId}`);
-
-        // return (
-        //     <div key={this.zoneId} className={`zone-wrapper zone-wrapper-${this.zoneId} container`}>
-        //         <div className={`zone zone-${this.zoneId} row`}>
-        //             {renderBlocks()}
-        //         </div>
-        //     </div>
-        // );
-        const renderComponent = (layout) => (
-            <div key={this.zoneId} className={`zone zone-${this.zoneId}`}>
-                {renderBlocks(layout)}
-            </div>
-        );
-
-        var result;
-        if (typeof(this.decorate) === 'function') {
-            result = this.decorate(this, renderComponent);
-        } else {
-            result = renderComponent();
-        }
-        this.rendered = true;
-        return result;
-    }
-
-}
 
 
 class Layout extends React.Component {
-
-    // zoneId: []
-    // mappedZoneBlockComponents = {}
 
     constructor(props) {
         super(props);
@@ -304,18 +42,21 @@ class Layout extends React.Component {
             layout: null,
             blockComponents: []
 
-        }
+        };
+
+
 
         this.contentRepository = props.contentRepository;
         this.layoutRepository = props.layoutRepository;
 
         this.onLayoutConfigurationUpdated = this.onLayoutConfigurationUpdated.bind(this);
+
+
     }
 
 
 
     fetchLayout() {
-
         //const blockComponents = []
 
         this.layoutRepository.getLayout("home")
@@ -342,63 +83,82 @@ class Layout extends React.Component {
 
     }
 
-    getThemeOrLayoutTemplateConfig(config, classNameSuffix, getClass, getDefaultConfig) {
+    /**
+     * Create a class instance based on the configuration:
+     *
+     * config = {
+     *   type: "Default",
+     *   properties: {
+     *     ...
+     *   }
+     * }
+     *
+     * OR
+     *
+     * config = "Default"
+     *
+     */
+
+    static createLayoutObject(config, nameMapper, require, getClass) {
 
         // TODO cache required classes!
 
         if (!config) {
-            config = getDefaultConfig ? getDefaultConfig() : {name: "Default", options: {}};
+            config = {type: "default"};
         }
 
         if (typeof(config) === 'string') {
-            config = {name: config};
+            config = {type: config};
         }
 
-        if (!config.options) {
-            config.options = {};
+        if (!config.type) {
+            config.type = "default";
         }
 
-        if (!config.name) {
-            config.name = "Default";
-        }
 
-        var className = null;
-        if (!classNameSuffix || config.name.endsWith(classNameSuffix)) {
-            className = config.name;
+        const className = nameMapper(config.type);
+
+        const module = require(className);
+
+        let clazz;
+        if (getClass) {
+            clazz = getClass(module, className);
         } else {
-            className = config.name + classNameSuffix;
+            clazz = module[className];
         }
 
-        const Class = getClass ? getClass(className) : require('./' + className).default;
-        const obj = new Class(config.options || {});
+        const obj = new clazz(config || {});
 
+        // TODO following should be configurable:
         if (!obj.getName) {
-            const name = "" + config.name;
+            const name = "" + config.type;
             obj.getName = () => name;
         }
 
         if (!obj.getFullName) {
-            obj.getFullName = () => className;
+            obj.getFullName = () => obj.constructor.name;
         }
         return obj;
     }
 
-    createLayoutTemplate() {
 
-        return this.getThemeOrLayoutTemplateConfig(
+    createLayoutTemplate() {
+        return Layout.createLayoutObject(
             this.state.layout && this.state.layout['layoutTemplate'],
-            "LayoutTemplate",
-            (className) => require('../templates/' + className).default);
+            (name) => StringUtils.toCamelCase(name, (n) => StringUtils.ensureSuffix(n, "LayoutTemplate")),
+            (name) => require('../templates/' + name),
+            (module, className) => module[className] || module.default
+            );
     }
 
+
     createTheme() {
-        // const Class = require('../themes/DefaultTheme').default;
-        // const obj = new Class({});
-        // return obj;
-        return this.getThemeOrLayoutTemplateConfig(
+        return Layout.createLayoutObject(
             this.state.layout && this.state.layout['theme'],
-            "Theme",
-            (className) => require('../themes/' + className).default);
+            (name) => StringUtils.toCamelCase(name, (n) => StringUtils.ensureSuffix(n, "Theme")),
+            (name) => require('../themes/' + name),
+            (module, className) => module[className] || module.default
+        );
     }
 
     applyThemeOnDocument(theme) {
@@ -416,17 +176,81 @@ class Layout extends React.Component {
         }
     }
 
+    // requireModule(name, requireContextProvider, requireProviders) {
+    //
+    //     // requireProviders:
+    //     // 1. array of functions
+    //     // 2. single function
+    //
+    //     return requireContextProvider().resolve(name);
+    //
+    //     //
+    //     // if (!Array.isArray(requireProviders)) {
+    //     //     // convert single item to an array
+    //     //     requireProviders = [requireProviders];
+    //     // }
+    //     //
+    //     //
+    //     // let module = undefined;
+    //     //
+    //     // for (let i = 0; i < requireProviders.length; i++) {
+    //     //
+    //     //     module = requireProviders[i](name);
+    //     //
+    //     //     if (module) {
+    //     //         break;
+    //     //     }
+    //     //
+    //     // }
+    //     //
+    //     // console.log("foundModule: " + module);
+    //     // console.log("foundModule: " + module.default);
+    //     // console.log("foundModule: " + module['HiddenLayoutTemplate']);
+    //
+    // }
+    //
+    //
+    // // makeClassName(name, ...suffixes) {
+    // //     let className = this.camelize(name);
+    // //     for (let i = suffixes.length - 1; i >= 0; i--) {
+    // //         if (!className.endsWith(suffixes[i])) {
+    // //             className += suffixes[i];
+    // //         }
+    // //     }
+    // //     return className;
+    // // }
+
     render() {
-        // TODO we should cache lots of stuff between renders!
+        // TODO we should cache lots of stuff between renders?
 
         const layoutTemplate = this.createLayoutTemplate();
+
+        if (!layoutTemplate) {
+            console.log("Error: failed to create layout template");
+            return (null);
+        }
+        if (layoutTemplate.shouldRender && !layoutTemplate.shouldRender()) {
+            console.log(`LayoutTemplate '${layoutTemplate.getFullName()}.shouldRender() says 'false'`);
+            return (null);
+        }
+
         const theme = this.createTheme();
+        if (!theme) {
+            console.log("Error: failed to create Theme");
+            return (null);
+        }
+
 
         this.applyThemeOnDocument(theme);
 
-        const layoutInfo = layoutTemplate.getLayoutInfo();
+
+        const layoutInfo =
+            (layoutTemplate.getLayoutInfo && layoutTemplate.getLayoutInfo())
+            || {zones: [], defaultZone: undefined };
+
         // console.log("layoutTemplate: " + layoutTemplate.getName());
         // console.log("layoutInfo: " + JSON.stringify(layoutInfo));
+
 
         const zones = layoutInfo.zones;
         const defaultZone = layoutInfo.defaultZone;
@@ -506,7 +330,7 @@ class Layout extends React.Component {
             </div>
         );
 
-        for (var zoneId in zoneWrappers) {
+        for (let zoneId in zoneWrappers) {
             if (!zoneWrappers.hasOwnProperty(zoneId)) {
                 continue;
             }
@@ -544,15 +368,18 @@ class Layout extends React.Component {
         const map = {};
 
 
-        var zoneOptions;
+        let zoneOptions;
 
         if (layout) {
             const layoutTemplateConfig = layout["layoutTemplate"] || {};
-            const layoutTemplateOptions = layoutTemplateConfig["options"] || {};
-            zoneOptions = layoutTemplateOptions["zoneOptions"] || {};
+            zoneOptions = layoutTemplateConfig["zoneOptions"] || {};
+            // console.log("layout.layoutTemplate: " + JSON.stringify(layout.layoutTemplate));
+            // console.log("zoneOptions: " + JSON.stringify(zoneOptions));
         } else {
             zoneOptions = {};
         }
+
+
 
         zoneIds.forEach((zoneId) => {
             map[zoneId] = new LayoutZoneWrapper({zoneId: zoneId, zoneOptions: zoneOptions});
@@ -624,5 +451,7 @@ Layout.propTypes = {
     // ).isRequired,
     // onTodoClick: PropTypes.func.isRequired
 }
+
+export {Layout, RenderContext};
 
 export default Layout

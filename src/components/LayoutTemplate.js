@@ -1,17 +1,92 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+// import PropTypes from 'prop-types'
 
 
-class ZoneLayoutTemplate {
+// class ZoneLayoutTemplate {
+//
+// }
+
+import Layout from '../components/Layout'
+import StringUtils from '../util/StringUtils'
+
+class ZoneTemplate {
+
+    static createZoneTemplate(config) {
+        return Layout.createLayoutObject(
+            config,
+            (name) => StringUtils.toCamelCase(name, (n) => StringUtils.ensureSuffix(n, "ZoneTemplate")),
+            (name) => require('../templates/' + name),
+            (module, className) => module[className] || module.default
+        );
+    }
+
 
 }
+
+class TieredLayoutConfiguration {
+
+    static defaultTiers = ['xs', 'sm', 'md', 'lg'];
+
+    constructor(obj, initDefault) {
+        if (obj === null || typeof(obj) === 'undefined') {
+            if (typeof(initDefault) === 'undefined') {
+                obj = {};
+            } else if (typeof(initDefault) === 'function') {
+                obj = initDefault({}, 'default');
+            } else {
+                obj = initDefault;
+            }
+        }
+
+        if (typeof(obj) === 'object' && !Array.isArray(obj)) {
+            console.log("is object: " + JSON.stringify(obj));
+            Object.assign(this, obj);
+        } else if (obj) {
+            console.log("is NOT obj: " + JSON.stringify(obj));
+            this['default'] = obj;
+        }
+
+    }
+
+    forEach(fn) {
+        for (let tier in this) {
+            if (!this.hasOwnProperty(tier)) {
+                continue;
+            }
+            fn(tier, this[tier]);
+        }
+    }
+    expandDefault(tiers) {
+
+        const expanded = new TieredLayoutConfiguration(this);
+
+        const def = this['default'];
+        tiers = tiers || TieredLayoutConfiguration.defaultTiers;
+        if (typeof(def) !== "undefined") {
+
+            tiers.forEach((t) => {
+                if (typeof(expanded[t]) === 'undefined') {
+                    expanded[t] = def;
+                }
+            });
+
+        }
+        delete expanded['default'];
+
+
+        return expanded;
+    }
+
+}
+
+
 
 class LayoutTemplate {
 
     constructor(options) {
         this.layoutInfo = {
             zones: [],
-            defaultZone: undefined
+                defaultZone: undefined
         };
         const {...opts} = options;
         this.options = opts;
@@ -23,6 +98,7 @@ class LayoutTemplate {
         }
         this.name = name;
         // this.currentZone = undefined;
+        // console.log("LayoutTemplate options=" + JSON.stringify(options));
     }
 
     getName() {
@@ -62,7 +138,6 @@ class LayoutTemplate {
         zoneIds.forEach((zoneId) => {
             const zone = zones[zoneId];
             if (typeof(filter) !== 'function' || filter(zoneId, zone)) {
-                console.log("** THID:" + this);
                 components.push(zone.render(this));
             }
         });
@@ -72,7 +147,6 @@ class LayoutTemplate {
     }
 
     renderBlockGroups(blockGroups) {
-        console.log("** renderBlockGroups()");
         const result = [];
         blockGroups.forEach((g) => {
             result.push(g.render(this));
@@ -124,5 +198,5 @@ class LayoutTemplate {
     }
 
 }
-
+export {ZoneTemplate, TieredLayoutConfiguration, LayoutTemplate}
 export default LayoutTemplate

@@ -1,5 +1,5 @@
 
-import ContentRepository from './ContentRepository'
+import {ContentItem, ContentRepository} from './ContentRepository'
 
 
 class RestContentRepository extends ContentRepository {

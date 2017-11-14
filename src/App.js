@@ -17,6 +17,8 @@ import MockLayoutRepository from './services/layout/MockLayoutRepository'
 
 // import ObjectUtils from './util/ObjectUtils'
 
+
+
 class App extends Component {
 
     constructor(props) {
@@ -27,9 +29,8 @@ class App extends Component {
     }
 
 
+
   render() {
-
-
 
         // var getBlockSpec = function() {
         //     console.error("getConfiguration is not bound");

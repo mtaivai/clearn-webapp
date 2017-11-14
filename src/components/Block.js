@@ -1,11 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+// import ReactDOM from 'react-dom';
 
 import PropTypes from 'prop-types'
 import MicroEvent from '../microevent.js';
 import {Button, ButtonToolbar} from 'react-bootstrap'
 
-import ContentBlock from './ContentBlock'
+// import ContentBlock from './ContentBlock'
 // import StaticContentBlock from './StaticContentBlock'
 import UnknownBlock from './UnknownBlock'
 
@@ -47,7 +47,7 @@ class BlockContext {
     }
 
     addAction(action) {
-        if (!action.name || action.name.length == 0) {
+        if (!action.name || action.name.length === 0) {
             throw new Error("action.name is required");
         }
         action.edit = (props) => {

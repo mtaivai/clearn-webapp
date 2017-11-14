@@ -12,27 +12,35 @@ home:
 
   # layoutTemplate is either a string or map of name, options
   layoutTemplate:
-    name: "DashBoard"
-    options:
-      showSidebar: true
-      showFooter: true
-      fixedFooter: true
-      #showHeader: false
-      fixedHeader: true
-      zoneOptions:
-        default:
-          layoutType: flow
-          defaultColumnOffset: prev # 'prev' | 'first' | 'last' | 'next' | # ; default = 'prev'
-        main:
-          layoutType: grid
-          gridColumns: 1 # 'auto' | #
-        footer:
-          layoutType: grid
-          defaultColumnOffset: next
-          gridColumns:
-            - 2
-            - 8
-            - 2
+    type: default
+    showSidebar: true
+    showFooter: true
+    fixedFooter: true
+    #showHeader: false
+    fixedHeader: true
+    zoneOptions:
+      default:
+        type: flow
+        defaultColumnOffset: prev # 'prev' | 'first' | 'last' | 'next' | # ; default = 'prev'
+      main:
+#        type: grid
+#        gridColumns: # literal = evenly spaced grid, array = column widths, map of previous: device size -> value
+#          xs: 1
+#          sm: 2
+#          md: 4 # 'auto' | #
+        type: flow
+        gridColumns: 12
+      footer:
+        type: grid
+        defaultColumnOffset: next
+        gridColumns:
+          - 2
+          - 8
+          - 2
+      header: flow
+
+      someOther: flow
+
 
   blocks:
     - id: 101
@@ -41,7 +49,7 @@ home:
       layoutOptions:
         targetZone: main
         columnSpan: 2 # not valid for 'grid'
-        columnOffset: 6
+        columnOffset: 2
         row: 2
       configuration:
         contentClass: Document
@@ -86,19 +94,28 @@ home:
       title: "Some static content 1"
       layoutOptions:
         targetZone: "header"
-        columnSpan: 6
+        columnSpan:
+          xs: 10
+          sm: 6
+        columnOffset:
+          default: 0
+          xs: 1
       configuration:
         contentType: "text/html"
-        contentBodyText: "<span>Header content here</span>"
+        contentBodyText: "This should be wide on XS"
     - id: 105
       type: StaticContentBlock
       title: "Some static content 2"
       layoutOptions:
         targetZone: "header"
-        columnSpan: 6
+        columnSpan:
+          sm: 6
+        visible: # behaviour depends on the LayoutTemplate; DefaultLayoutTemplate supports tiered configuration
+          default: true # 'false' adds .hidden to the wrapper
+          xs: false # depends on 'default': if default is true, 'false' here adds .hidden-xs class to wrapper;
       configuration:
         contentType: "text/html"
-        contentBodyText: "<span>Another header content here</span>"
+        contentBodyText: "This should hide on XS"
     - id: 106
       type: StaticContentBlock
       title: "Some static content 3"
