@@ -1,0 +1,23 @@
+
+
+
+.App {
+
+  .Header {
+    background-color: white;
+    border-bottom: 1px solid gray;
+
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+    min-height: 10px;
+
+  }
+
+  .Main {
+    padding-top: 10px;
+  }
+
+}

@@ -1,0 +1,19 @@
+
+
+html/*.sticky-footer*/ {
+  min-height: 100%;
+
+  position: relative;
+  body {
+    margin-bottom: 60px;
+
+    .App {
+      .Footer {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 60px;
+      }
+    }
+  }
+}

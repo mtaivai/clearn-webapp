@@ -1,22 +1,25 @@
-let nextTodoId = 0
-export const addTodo = text => {
+
+
+import repositories from '../repository'
+import { createAction, createActions, handleActions, combineActions } from 'redux-actions'
+
+const assetsMeta = (...args) => {
     return {
-        type: 'ADD_TODO',
-        id: nextTodoId++,
-        text
-    }
+        arguments: args
+        //dispatchActionOnRequest: true,
+        //dispatchAllPhases: true,
+        //dispatchMainActionOnRequest: false,
+        };
+};
+
+//export function fetchAssets() {}
+
+const _updateAsset = createAction('UPDATE_ASSETS', repositories.assets.update, assetsMeta);
+
+export function updateAsset(assetId) {
+    return _updateAsset(assetId);
 }
 
-export const setVisibilityFilter = filter => {
-    return {
-        type: 'SET_VISIBILITY_FILTER',
-        filter
-    }
-}
 
-export const toggleTodo = id => {
-    return {
-        type: 'TOGGLE_TODO',
-        id
-    }
-}
+export const fetchAssets = createAction('FETCH_ASSETS', repositories.assets.fetch, assetsMeta);
+
