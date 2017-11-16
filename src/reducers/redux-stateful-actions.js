@@ -50,7 +50,7 @@ export const handleStatefulActions = (handlers, defaultState) => {
         const handler = handlers[type];
         if (typeof(handler) === 'object') {
             // Replace with custom logic:
-            console.log("Handling as stateful action: '" + type + "'");
+            // console.log("Handling as stateful action: '" + type + "'");
 
             handlers[type] = (state, action) => {
 
@@ -110,7 +110,7 @@ export const handleStatefulActions = (handlers, defaultState) => {
 
             };
         } else {
-            console.log("Not handling as stateful action: '" + type + "'");
+            // console.log("Not handling as stateful action: '" + type + "'");
 
         }
     }

@@ -1,9 +1,11 @@
 import { combineReducers } from 'redux'
 import assets from './assets-reducer'
 
+import { ConnectedRouter, routerReducer, routerMiddleware, push } from 'react-router-redux'
 
 const appReducer = combineReducers({
-    assets
+    assets,
+    router: routerReducer
 });
 
 

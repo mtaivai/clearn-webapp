@@ -9,16 +9,24 @@ import { applyMiddleware } from 'redux'
 import statefulPromiseMiddleware from './stateful-promise-middleware'
 
 import { persistState } from 'redux-devtools'
+import { combineReducers } from 'redux'
 
 import { Provider } from 'react-redux'
 
+import createHistory from 'history/createBrowserHistory'
+import { Route } from 'react-router'
+
+import { ConnectedRouter, routerReducer, routerMiddleware, push } from 'react-router-redux'
 
 import appReducer from './reducers'
 import App from './components/App'
 import DevTools from './containers/DevTools'
 
+// Create a history of your choosing (we're using a browser history in this case)
+const history = createHistory();
 
 const middleware = applyMiddleware(
+    routerMiddleware(history),
     thunkMiddleware,
     statefulPromiseMiddleware
 );
@@ -37,16 +45,22 @@ const enhancer = compose(
 
 const initialState = {};
 
-let store = createStore(appReducer, initialState, enhancer);
+let store = createStore(
+    appReducer,
+    initialState,
+    enhancer);
 
 // TODO we can have this as an configuration option:
 require('./sticky-footer.css');
 //require('./fixed-header.css');
 //document.body.parentNode.className = "sticky-footer";
 
+
 render(
     <Provider store={store}>
-        <App />
+        <ConnectedRouter history={history}>
+            <App />
+        </ConnectedRouter>
     </Provider>,
     document.getElementById('root')
 );
