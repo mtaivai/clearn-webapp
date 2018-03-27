@@ -47,7 +47,7 @@ const Header = ({dispatch}) => {
     return (
         <div className={"Header"}>
             <NavBar>
-                <NavLink to={"/"} exact replace className={"navbar-brand"}>Celkie</NavLink>
+                <NavLink to={"/"} exact replace className={"navbar-brand"}>CelKIE</NavLink>
                 {/*<a href={"//localhost:3000/"} className={"navbar-brand"}>Fixed navbar</a>*/}
 
                 <NavBarCollapse id="navbarCollapse">

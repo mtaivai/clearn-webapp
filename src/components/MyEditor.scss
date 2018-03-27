@@ -1,0 +1,32 @@
+.MyEditor {
+
+  p {
+    color: red;
+  }
+
+  .DraftEditor-root {
+    border: 1px solid green;
+    .DraftEditor-editorContainer {
+      border: 1px solid red;
+    }
+  }
+
+
+  .RichEditor-controls {
+    .RichEditor-styleButton {
+      border: outset;
+      cursor: default;
+      &.RichEditor-activeButton {
+        border: inset;
+      }
+    }
+  }
+  .RichEditor-editor {
+    .DraftEditor-root {
+      .DraftEditor-editorContainer {
+        border: 1px solid gray;
+      }
+    }
+  }
+
+}

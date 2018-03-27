@@ -12,6 +12,7 @@ import {Link, Route} from 'react-router-dom'
 
 /**
  * A <Link> wrapper that knows if it's "active" or not.
+ * @author Mikko
  */
 
 class NavLink extends React.Component {

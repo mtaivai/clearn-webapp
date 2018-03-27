@@ -8,6 +8,9 @@ import {connect} from 'react-redux'
 import { Route } from 'react-router'
 import { ConnectedRouter, routerReducer, routerMiddleware, push } from 'react-router-redux'
 
+import MyEditor from './MyEditor'
+import NIEditor from './NIEditor'
+
 import './App.css';
 
 
@@ -26,8 +29,9 @@ class App extends React.Component {
     }
 
     render() {
-        const Home = () => (<div>Home</div>);
-        const LinkPage = () => (<div>LinkPage</div>);
+        const Editor1 = () => (<NIEditor/>);
+        const Editor2 = () => (<MyEditor/>);
+        const LinkPage = () => (<ConnectedAssetList onAssetClick ={() => {}}/>);
         const Other = () => (<div>Other</div>);
 
         return (
@@ -36,14 +40,15 @@ class App extends React.Component {
                 <Header/>
                 <div className={"Main"}>
                     <div className={"container"}>
+                        <Route exact path="/" component={Editor1}/>
+                        <Route exact path="/editor2" component={Editor2}/>
+                        <Route exact path="/link" component={LinkPage}/>
+                        <Route exact path="/other" component={Other}/>
 
-                        <ConnectedAssetList onAssetClick ={() => {}}/>
                     </div>
                 </div>
 
-                <Route exact path="/" component={Home}/>
-                <Route exact path="/link" component={LinkPage}/>
-                <Route exact path="/other" component={Other}/>
+
                 <Footer/>
                 {/*<DevTools/>*/}
             </div>

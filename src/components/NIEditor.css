@@ -1,0 +1,7 @@
+.NIEditor {
+  border: 1px solid black;
+  min-height: 20px; }
+  .NIEditor p {
+    color: green; }
+  .NIEditor h1, .NIEditor h2, .NIEditor h3, .NIEditor h4, .NIEditor h5 {
+    color: red; }

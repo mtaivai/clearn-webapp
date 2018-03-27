@@ -2,6 +2,10 @@
 
 import { handleActions, combineActions } from 'redux-actions'
 
+// Author: Mikko
+// TODO Plese document this
+
+
 const requestAction = (action) => {
     return action + '_REQUEST';
 };
